@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: dbEstudos
+  datasource:
+    url: jdbc:postgresql://localhost:5434/estudos
+    username: postgres
+    password: postgres
+  jpa:
+    show-sql: true
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect

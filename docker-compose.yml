@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: estudos_postgres
+    environment:
+      POSTGRES_DB: estudos
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - estudos_pgdata:/var/lib/postgresql/data
+
+volumes:
+  estudos_pgdata:
