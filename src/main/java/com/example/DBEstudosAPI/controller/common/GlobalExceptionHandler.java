@@ -1,9 +1,6 @@
 package com.example.DBEstudosAPI.controller.common;
 
-import com.example.DBEstudosAPI.exceptions.CategoriaEmUsoException;
-import com.example.DBEstudosAPI.exceptions.CategoriaNaoEncontradaException;
-import com.example.DBEstudosAPI.exceptions.CategoriaNaoPermitidaException;
-import com.example.DBEstudosAPI.exceptions.RegistroNaoEncontradoException;
+import com.example.DBEstudosAPI.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -11,7 +8,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -61,6 +57,30 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CategoriaEmUsoException.class)
     public ResponseEntity<RestMenssagemErro> handleCategoriaEmUsoException(CategoriaEmUsoException e){
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.CONFLICT,
+                e.getMessage(),
+                Set.of());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(restMenssagemErro);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<RestMenssagemErro> handleIllegalArgumentException(IllegalArgumentException e){
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.BAD_REQUEST,
+                e.getMessage(),
+                Set.of());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restMenssagemErro);
+    }
+
+    @ExceptionHandler(LoginCadastradoException.class)
+    public ResponseEntity<RestMenssagemErro> handleUsuariosDuplicadosException(LoginCadastradoException e){
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.CONFLICT,
+                e.getMessage(),
+                Set.of());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(restMenssagemErro);
+    }
+
+    @ExceptionHandler(EmailCadastradoException.class)
+    public ResponseEntity<RestMenssagemErro> handleUsuariosDuplicadosException(EmailCadastradoException e){
         RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.CONFLICT,
                 e.getMessage(),
                 Set.of());
