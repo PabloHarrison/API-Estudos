@@ -14,11 +14,11 @@ public class UsuarioValidator {
     UsuarioRepository repository;
 
     public void usuarioValidator(String login, String email){
-        Usuario foundUsuario = repository.findByLogin(login);
+        Usuario foundUsuario = repository.findByLogin(login).orElse(null);
         if(foundUsuario != null){
             throw new LoginCadastradoException("Login cadastrado.");
         }
-        foundUsuario = repository.findByEmail(email);
+        foundUsuario = repository.findByEmail(email).orElse(null);
         if(foundUsuario != null){
             throw new EmailCadastradoException("Email cadastrado.");
         }

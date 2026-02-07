@@ -4,6 +4,7 @@ import com.example.DBEstudosAPI.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -85,6 +86,14 @@ public class GlobalExceptionHandler {
                 e.getMessage(),
                 Set.of());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(restMenssagemErro);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<RestMenssagemErro> handleBadCredentialsException(BadCredentialsException e){
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+                e.getMessage(),
+                Set.of());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
     }
 
     @ExceptionHandler(RuntimeException.class)

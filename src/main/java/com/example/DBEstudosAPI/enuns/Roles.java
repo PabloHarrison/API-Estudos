@@ -14,13 +14,4 @@ public enum Roles {
     public String getRole(){
         return role;
     }
-
-    public static Roles value(String roles){
-        for(Roles value : Roles.values()){
-            if(roles.equals(value.getRole())){
-                return value;
-            }
-        }
-        throw new IllegalArgumentException("Erro na role.");
-    }
 }
