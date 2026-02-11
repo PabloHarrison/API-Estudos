@@ -4,7 +4,10 @@ import com.example.DBEstudosAPI.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -90,6 +93,30 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<RestMenssagemErro> handleBadCredentialsException(BadCredentialsException e){
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+                e.getMessage(),
+                Set.of());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+    }
+
+    @ExceptionHandler(InvalidBearerTokenException.class)
+    public ResponseEntity<RestMenssagemErro> handleAuthenticationException(InvalidBearerTokenException e){
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+                "Sessão inválida ou expirada",
+                Set.of());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+    }
+
+    @ExceptionHandler(InsufficientAuthenticationException.class)
+    public ResponseEntity<RestMenssagemErro> handleInsufficientAuthenticationException(InsufficientAuthenticationException e){
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+                "É necessária autenticação completa para acessar este recurso.",
+                Set.of());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<RestMenssagemErro> handleAccessDeniedException(AccessDeniedException e){
         RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
                 e.getMessage(),
                 Set.of());

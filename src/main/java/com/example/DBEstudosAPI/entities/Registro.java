@@ -25,4 +25,7 @@ public class Registro {
     @JoinTable(name = "registro_categorias", joinColumns = @JoinColumn(name = "registro_id"), inverseJoinColumns = @JoinColumn(name = "categoria_id"))
     @ManyToMany
     private Set<Categoria> categorias;
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 }

@@ -1,9 +1,6 @@
 package com.example.DBEstudosAPI.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,4 +18,7 @@ public class Categoria {
     @EqualsAndHashCode.Include
     private UUID id;
     private String nomeCategoria;
+    @ManyToOne
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 }

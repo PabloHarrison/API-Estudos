@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface CategoriaRepository extends JpaRepository<Categoria, UUID> {
 
-    Set<Categoria> findAllByNomeCategoriaContainingIgnoreCase(String nomeCategoria);
+    Set<Categoria> findAllByNomeCategoriaContainingIgnoreCaseAndUsuarioId(String nomeCategoria, UUID id);
+    Set<Categoria> findAllByIdInAndUsuarioId(Set<UUID> ids, UUID usuarioId);
 }

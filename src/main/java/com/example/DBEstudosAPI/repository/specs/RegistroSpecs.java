@@ -6,6 +6,7 @@ import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class RegistroSpecs {
 
@@ -70,5 +71,10 @@ public class RegistroSpecs {
             Join<Object, Object> joinCategoria = root.join("categorias", JoinType.LEFT);
             return cb.like(cb.upper(joinCategoria.get("nomeCategoria")), "%" + nomeCategoria.toUpperCase() + "%");
         };
+    }
+
+    public static Specification<Registro> usuarioIdEquals(UUID id){
+        return (root, query, cb) ->
+                cb.equal(root.get("usuario").get("id"), id);
     }
 }
