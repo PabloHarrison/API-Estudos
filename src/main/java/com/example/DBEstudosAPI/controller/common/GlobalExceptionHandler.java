@@ -53,10 +53,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CategoriaNaoPermitidaException.class)
     public ResponseEntity<RestMenssagemErro> handleCategoriaNaoPermitidaException(CategoriaNaoPermitidaException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNPROCESSABLE_ENTITY,
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.BAD_REQUEST,
                 e.getMessage(),
                 Set.of());
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restMenssagemErro);
     }
 
     @ExceptionHandler(CategoriaEmUsoException.class)

@@ -111,7 +111,7 @@ public class RegistroService {
             registro.setPlanejamento(dto.planejamento());
         }
         if(dto.categoriasIds() != null){
-            Set<Categoria> categorias = new HashSet<>(categoriaRepository.findAllById(dto.categoriasIds()));
+            Set<Categoria> categorias = new HashSet<>(categoriaRepository.findAllByIdInAndUsuarioId(dto.categoriasIds(), registro.getUsuario().getId()));
 
             if(categorias.size() != dto.categoriasIds().size()){
                 throw new CategoriaNaoEncontradaException("Categoria nao encontrada.");
