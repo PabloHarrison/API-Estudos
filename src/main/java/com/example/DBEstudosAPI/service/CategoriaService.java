@@ -13,6 +13,7 @@ import com.example.DBEstudosAPI.repository.CategoriaRepository;
 import com.example.DBEstudosAPI.repository.RegistroRepository;
 import com.example.DBEstudosAPI.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
@@ -37,6 +39,7 @@ public class CategoriaService {
         Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario não encontrado."));
         categoria.setUsuario(usuario);
         Categoria categoriaSalva = categoriaRepository.save(categoria);
+        log.info("event=categoria_create categoriaId={} usuarioId={}", categoriaSalva.getId(), id);
         return mapper.toDTO(categoriaSalva);
     }
 
@@ -63,10 +66,12 @@ public class CategoriaService {
     @Transactional
     public void delete(UUID id){
         Categoria categoria = findEntityById(id);
+        UUID usuarioId = categoria.getUsuario().getId();
         if(existRegistro(categoria)){
             throw new CategoriaEmUsoException("Não é possivel deletar uma categoria que esteja sendo usada por um registro.");
         }
         categoriaRepository.delete(categoria);
+        log.info("event=categoria_deleted categoriaId={} usuarioId={} nomeCategoria={}", categoria.getId(), usuarioId, categoria.getNomeCategoria());
     }
 
     @Transactional
@@ -77,7 +82,9 @@ public class CategoriaService {
         }else{
             categoria.setNomeCategoria(dto.nomeCategoria());
         }
+        UUID usuarioId = categoria.getUsuario().getId();
         categoriaRepository.save(categoria);
+        log.info("event=categoria_updated categoriaId={} usuarioId={} nomeCategoria={} ", categoria.getId(), usuarioId, categoria.getNomeCategoria());
         return mapper.toDTO(categoria);
     }
 

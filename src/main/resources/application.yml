@@ -13,3 +13,13 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+logging:
+  file:
+    name: EstudoAPI.log
+  logback:
+    rollingpolicy:
+      max-history: 30
+      max-file-size: 10MB
+      total-size-cap: 1GB
+  level:
+    root: info

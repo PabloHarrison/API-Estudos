@@ -9,11 +9,13 @@ import com.example.DBEstudosAPI.entities.Registro;
 import com.example.DBEstudosAPI.entities.Usuario;
 import com.example.DBEstudosAPI.exceptions.CategoriaNaoEncontradaException;
 import com.example.DBEstudosAPI.exceptions.RegistroNaoEncontradoException;
+import com.example.DBEstudosAPI.exceptions.UsuarioNaoEncontradoException;
 import com.example.DBEstudosAPI.repository.CategoriaRepository;
 import com.example.DBEstudosAPI.repository.RegistroRepository;
 import com.example.DBEstudosAPI.repository.UsuarioRepository;
 import com.example.DBEstudosAPI.repository.specs.RegistroSpecs;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +30,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RegistroService {
 
     private final RegistroRepository repository;
@@ -39,7 +42,7 @@ public class RegistroService {
     public RegistroResponseDTO save(RegistroPostDTO dto){
         Registro registro = registroMapper.toEntity(dto);
         UUID id = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario não encontrado."));
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não encontrado."));
         Set<Categoria> categorias = new HashSet<>(categoriaRepository.findAllByIdInAndUsuarioId(dto.categoriasIds(), usuario.getId()));
         if(categorias.size() != new HashSet<>(dto.categoriasIds()).size()){
             throw new CategoriaNaoEncontradaException("Uma ou mais categorias não existem!");
@@ -47,6 +50,7 @@ public class RegistroService {
         registro.setCategorias(categorias);
         registro.setUsuario(usuario);
         Registro registroSalvo = repository.save(registro);
+        log.info("event=registro_created registroId={} usuarioId={} categoriasCount={}", registroSalvo.getId(), id, categorias.size());
         return registroMapper.toDTO(registroSalvo);
     }
 
@@ -63,6 +67,7 @@ public class RegistroService {
     public void delete(UUID id){
         Registro registro = findOwnerRegistration(id);
         repository.delete(registro);
+        log.info("event=registro_deleted registroId={} usuarioId={}", registro.getId(), registro.getUsuario().getId());
     }
 
     public Page<RegistroResponseDTO> search(Integer ano, Integer mes, Integer dia, String nomeCategoria, Integer min, Integer max, Integer pagina, Integer tamanhoPagina){
@@ -92,8 +97,8 @@ public class RegistroService {
 
     @Transactional
     public RegistroResponseDTO update(String id, RegistroPatchDTO dto){
-        UUID idNovo = UUID.fromString(id);
-        Registro registro = findOwnerRegistration(idNovo);
+        UUID registroId = UUID.fromString(id);
+        Registro registro = findOwnerRegistration(registroId);
 
         if(dto.data() != null){
             registro.setData(dto.data());
@@ -121,6 +126,7 @@ public class RegistroService {
         }
 
         repository.save(registro);
+        log.info("event=registro_updated registroId={} usuarioId={}", registro.getId(), registro.getUsuario().getId());
         return registroMapper.toDTO(registro);
     }
 

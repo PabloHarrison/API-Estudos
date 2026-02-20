@@ -40,6 +40,8 @@ build/
 /application.yml
 
 # Logs
+logs/
 *.log
+*.gz
 
 Thumbs.db

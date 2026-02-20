@@ -1,6 +1,7 @@
 package com.example.DBEstudosAPI.controller.common;
 
 import com.example.DBEstudosAPI.exceptions.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -16,17 +17,29 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RegistroNaoEncontradoException.class)
     public ResponseEntity<RestMenssagemErro> handleRegistroNaoEncontrado(RegistroNaoEncontradoException e){
         RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.NOT_FOUND, e.getMessage(), Set.of());
+        log.warn("event=register_not_found detail={}", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(restMenssagemErro);
     }
 
     @ExceptionHandler(CategoriaNaoEncontradaException.class)
     public ResponseEntity<RestMenssagemErro> handleCategoriaNaoEncontradaException(CategoriaNaoEncontradaException e){
         RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.NOT_FOUND, e.getMessage(), Set.of());
+        log.warn("event=category_not_found detail={}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(restMenssagemErro);
+    }
+
+    @ExceptionHandler(UsuarioNaoEncontradoException.class)
+    public ResponseEntity<RestMenssagemErro> handleUsuarioNaoEncontradoException(UsuarioNaoEncontradoException e){
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(
+                HttpStatus.NOT_FOUND,
+                e.getMessage(),
+                Set.of());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(restMenssagemErro);
     }
 
@@ -64,6 +77,7 @@ public class GlobalExceptionHandler {
         RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.CONFLICT,
                 e.getMessage(),
                 Set.of());
+        log.warn("event=category_delete_blocked_in_use detail={}", e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(restMenssagemErro);
     }
 
@@ -76,18 +90,20 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(LoginCadastradoException.class)
-    public ResponseEntity<RestMenssagemErro> handleUsuariosDuplicadosException(LoginCadastradoException e){
+    public ResponseEntity<RestMenssagemErro> handleLoginCadastradoException(LoginCadastradoException e){
         RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.CONFLICT,
                 e.getMessage(),
                 Set.of());
+        log.warn("event=duplicate_registration_by_login detail={}", e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(restMenssagemErro);
     }
 
     @ExceptionHandler(EmailCadastradoException.class)
-    public ResponseEntity<RestMenssagemErro> handleUsuariosDuplicadosException(EmailCadastradoException e){
+    public ResponseEntity<RestMenssagemErro> handleEmailCadastradoException(EmailCadastradoException e){
         RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.CONFLICT,
                 e.getMessage(),
                 Set.of());
+        log.warn("event=duplicate_registration_by_email detail={}", e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(restMenssagemErro);
     }
 
@@ -104,6 +120,7 @@ public class GlobalExceptionHandler {
         RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
                 "Sessão inválida ou expirada",
                 Set.of());
+        log.warn("event=authentication_token_failure reason=invalid_bearer_token");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
     }
 
@@ -117,17 +134,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<RestMenssagemErro> handleAccessDeniedException(AccessDeniedException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
-                e.getMessage(),
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.FORBIDDEN,
+                "Você não tem permissão para acessar este recurso.",
                 Set.of());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+        log.warn("event=access_denied");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(restMenssagemErro);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<RestMenssagemErro> handleErrosNaoTratados(RuntimeException e){
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<RestMenssagemErro> handleErrosNaoTratados(Exception e){
         RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Ocorreu um erro inesperado.",
                 Set.of());
+        log.error("event=unexpected_error_while_processing_request", e);
         return ResponseEntity.internalServerError().body(restMenssagemErro);
     }
 }
