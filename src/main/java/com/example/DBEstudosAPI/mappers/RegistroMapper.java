@@ -1,7 +1,7 @@
-package com.example.DBEstudosAPI.controller.mappers;
+package com.example.DBEstudosAPI.mappers;
 
-import com.example.DBEstudosAPI.controller.dto.RegistroPostDTO;
-import com.example.DBEstudosAPI.controller.dto.RegistroResponseDTO;
+import com.example.DBEstudosAPI.dto.RegistroPostDTO;
+import com.example.DBEstudosAPI.dto.RegistroResponseDTO;
 import com.example.DBEstudosAPI.entities.Registro;
 import org.mapstruct.Mapper;
 

@@ -1,4 +1,4 @@
-package com.example.DBEstudosAPI.controller.common;
+package com.example.DBEstudosAPI.exceptions.common;
 
 import com.example.DBEstudosAPI.exceptions.*;
 import lombok.extern.slf4j.Slf4j;

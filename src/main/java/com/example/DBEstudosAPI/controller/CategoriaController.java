@@ -1,8 +1,8 @@
 package com.example.DBEstudosAPI.controller;
 
-import com.example.DBEstudosAPI.controller.dto.CategoriaPatchDTO;
-import com.example.DBEstudosAPI.controller.dto.CategoriaPostDTO;
-import com.example.DBEstudosAPI.controller.dto.CategoriaResponseDTO;
+import com.example.DBEstudosAPI.dto.CategoriaPatchDTO;
+import com.example.DBEstudosAPI.dto.CategoriaPostDTO;
+import com.example.DBEstudosAPI.dto.CategoriaResponseDTO;
 import com.example.DBEstudosAPI.service.CategoriaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

@@ -1,6 +1,6 @@
 package com.example.DBEstudosAPI.configuration;
 
-import com.example.DBEstudosAPI.security.CustomAuthenticationEntryPoint;
+import com.example.DBEstudosAPI.security.entrypoint.CustomAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;

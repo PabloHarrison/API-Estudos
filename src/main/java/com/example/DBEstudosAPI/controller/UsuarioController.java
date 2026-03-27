@@ -1,8 +1,7 @@
 package com.example.DBEstudosAPI.controller;
 
-import com.example.DBEstudosAPI.controller.dto.UsuarioLoginDTO;
-import com.example.DBEstudosAPI.controller.dto.UsuarioPostDTO;
-import com.example.DBEstudosAPI.entities.Usuario;
+import com.example.DBEstudosAPI.dto.UsuarioLoginDTO;
+import com.example.DBEstudosAPI.dto.UsuarioPostDTO;
 import com.example.DBEstudosAPI.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -11,7 +10,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

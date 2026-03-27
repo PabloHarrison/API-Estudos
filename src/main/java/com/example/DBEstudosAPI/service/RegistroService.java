@@ -1,9 +1,9 @@
 package com.example.DBEstudosAPI.service;
 
-import com.example.DBEstudosAPI.controller.dto.RegistroPatchDTO;
-import com.example.DBEstudosAPI.controller.dto.RegistroPostDTO;
-import com.example.DBEstudosAPI.controller.dto.RegistroResponseDTO;
-import com.example.DBEstudosAPI.controller.mappers.RegistroMapper;
+import com.example.DBEstudosAPI.dto.RegistroPatchDTO;
+import com.example.DBEstudosAPI.dto.RegistroPostDTO;
+import com.example.DBEstudosAPI.dto.RegistroResponseDTO;
+import com.example.DBEstudosAPI.mappers.RegistroMapper;
 import com.example.DBEstudosAPI.entities.Categoria;
 import com.example.DBEstudosAPI.entities.Registro;
 import com.example.DBEstudosAPI.entities.Usuario;

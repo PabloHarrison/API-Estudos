@@ -1,7 +1,7 @@
 package com.example.DBEstudosAPI.security;
 
 import com.example.DBEstudosAPI.entities.Usuario;
-import com.example.DBEstudosAPI.enuns.Roles;
+import com.example.DBEstudosAPI.enums.Roles;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

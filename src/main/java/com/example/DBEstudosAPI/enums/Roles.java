@@ -1,4 +1,4 @@
-package com.example.DBEstudosAPI.enuns;
+package com.example.DBEstudosAPI.enums;
 
 public enum Roles {
 

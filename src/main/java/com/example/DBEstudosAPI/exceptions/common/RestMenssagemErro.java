@@ -1,4 +1,4 @@
-package com.example.DBEstudosAPI.controller.common;
+package com.example.DBEstudosAPI.exceptions.common;
 
 
 import org.springframework.http.HttpStatus;

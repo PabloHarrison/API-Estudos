@@ -1,7 +1,7 @@
-package com.example.DBEstudosAPI.controller.mappers;
+package com.example.DBEstudosAPI.mappers;
 
-import com.example.DBEstudosAPI.controller.dto.CategoriaPostDTO;
-import com.example.DBEstudosAPI.controller.dto.CategoriaResponseDTO;
+import com.example.DBEstudosAPI.dto.CategoriaPostDTO;
+import com.example.DBEstudosAPI.dto.CategoriaResponseDTO;
 import com.example.DBEstudosAPI.entities.Categoria;
 import org.mapstruct.Mapper;
 

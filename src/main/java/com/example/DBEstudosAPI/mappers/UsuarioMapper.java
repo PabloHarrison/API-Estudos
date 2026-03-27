@@ -1,6 +1,6 @@
-package com.example.DBEstudosAPI.controller.mappers;
+package com.example.DBEstudosAPI.mappers;
 
-import com.example.DBEstudosAPI.controller.dto.UsuarioPostDTO;
+import com.example.DBEstudosAPI.dto.UsuarioPostDTO;
 import com.example.DBEstudosAPI.entities.Usuario;
 import org.mapstruct.Mapper;
 

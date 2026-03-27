@@ -1,8 +1,8 @@
 package com.example.DBEstudosAPI.controller;
 
-import com.example.DBEstudosAPI.controller.dto.RegistroPatchDTO;
-import com.example.DBEstudosAPI.controller.dto.RegistroPostDTO;
-import com.example.DBEstudosAPI.controller.dto.RegistroResponseDTO;
+import com.example.DBEstudosAPI.dto.RegistroPatchDTO;
+import com.example.DBEstudosAPI.dto.RegistroPostDTO;
+import com.example.DBEstudosAPI.dto.RegistroResponseDTO;
 import com.example.DBEstudosAPI.service.RegistroService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

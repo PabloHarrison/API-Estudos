@@ -1,4 +1,4 @@
-package com.example.DBEstudosAPI.security;
+package com.example.DBEstudosAPI.security.entrypoint;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

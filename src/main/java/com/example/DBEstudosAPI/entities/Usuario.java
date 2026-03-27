@@ -1,6 +1,6 @@
 package com.example.DBEstudosAPI.entities;
 
-import com.example.DBEstudosAPI.enuns.Roles;
+import com.example.DBEstudosAPI.enums.Roles;
 import jakarta.persistence.*;
 import lombok.Data;
 

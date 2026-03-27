@@ -1,9 +1,10 @@
 package com.example.DBEstudosAPI.service;
 
-import com.example.DBEstudosAPI.controller.dto.CategoriaPatchDTO;
-import com.example.DBEstudosAPI.controller.dto.CategoriaPostDTO;
-import com.example.DBEstudosAPI.controller.dto.CategoriaResponseDTO;
-import com.example.DBEstudosAPI.controller.mappers.CategoriaMapper;
+import com.example.DBEstudosAPI.dto.CategoriaPatchDTO;
+import com.example.DBEstudosAPI.dto.CategoriaPostDTO;
+import com.example.DBEstudosAPI.dto.CategoriaResponseDTO;
+import com.example.DBEstudosAPI.exceptions.UsuarioNaoEncontradoException;
+import com.example.DBEstudosAPI.mappers.CategoriaMapper;
 import com.example.DBEstudosAPI.entities.Categoria;
 import com.example.DBEstudosAPI.entities.Usuario;
 import com.example.DBEstudosAPI.exceptions.CategoriaEmUsoException;
@@ -36,7 +37,7 @@ public class CategoriaService {
     public CategoriaResponseDTO save(CategoriaPostDTO dto){
         Categoria categoria = mapper.toEntity(dto);
         UUID id = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario não encontrado."));
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não encontrado."));
         categoria.setUsuario(usuario);
         Categoria categoriaSalva = categoriaRepository.save(categoria);
         log.info("event=categoria_create categoriaId={} usuarioId={}", categoriaSalva.getId(), id);
