@@ -91,7 +91,7 @@ public class CategoriaController {
             @ApiResponse(responseCode = "401", description = "Sessão inválida ou expirada."),
             @ApiResponse(responseCode = "404", description = "Categoria não encontrada.")
     })
-    public ResponseEntity<CategoriaResponseDTO> atualizar(@PathVariable("id") UUID id,@RequestBody CategoriaPatchDTO nomeCategoria){
+    public ResponseEntity<CategoriaResponseDTO> atualizar(@PathVariable("id") UUID id, @RequestBody @Valid CategoriaPatchDTO nomeCategoria){
         return ResponseEntity.ok(service.update(id, nomeCategoria));
     }
 }

@@ -99,9 +99,9 @@ public class RegistroController {
             @ApiResponse(responseCode = "200", description = "Registro atualizado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Erro de validação ou JSON inválido."),
             @ApiResponse(responseCode = "401", description = "Sessão inválida ou expirada."),
-            @ApiResponse(responseCode = "404", description = "Categoria não encontrada.")
+            @ApiResponse(responseCode = "404", description = "Recurso não encontrado.")
     })
-    public ResponseEntity<RegistroResponseDTO> update(@PathVariable("id") String id, @RequestBody RegistroPatchDTO dto){
+    public ResponseEntity<RegistroResponseDTO> update(@PathVariable("id") String id, @RequestBody @Valid RegistroPatchDTO dto){
         return ResponseEntity.ok(service.update(id, dto));
     }
 }
