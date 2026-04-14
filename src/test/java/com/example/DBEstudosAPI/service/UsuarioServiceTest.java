@@ -1,5 +1,6 @@
 package com.example.DBEstudosAPI.service;
 
+import com.example.DBEstudosAPI.dto.TokenResponseDTO;
 import com.example.DBEstudosAPI.dto.UsuarioLoginDTO;
 import com.example.DBEstudosAPI.dto.UsuarioPostDTO;
 import com.example.DBEstudosAPI.entities.Usuario;
@@ -38,6 +39,8 @@ public class UsuarioServiceTest {
     UsuarioValidator validator;
     @Mock
     JwtTokenService jwtTokenService;
+    @Mock
+    RefreshTokenService refreshTokenService;
 
     private Usuario criarUsuario(){
         Usuario u = new Usuario();
@@ -128,14 +131,18 @@ public class UsuarioServiceTest {
         Mockito.when(usuarioRepository.findByEmail(Mockito.any())).thenReturn(Optional.of(u));
         Mockito.when(encoder.matches(Mockito.any(), Mockito.any())).thenReturn(true);
         Mockito.when(jwtTokenService.generateToken(u)).thenReturn("token");
+        Mockito.when(refreshTokenService.createSession(u)).thenReturn("refreshToken");
 
-        String token = service.loginUser(loginDTO);
+        TokenResponseDTO tokens= service.loginUser(loginDTO);
 
-        Assertions.assertThat(token).isEqualTo("token");
+        Assertions.assertThat(tokens).extracting(TokenResponseDTO::accessToken).isEqualTo("token");
+        Assertions.assertThat(tokens).extracting(TokenResponseDTO::refreshToken).isEqualTo("refreshToken");
+
 
         Mockito.verify(usuarioRepository).findByEmail(loginDTO.email());
         Mockito.verify(encoder).matches(loginDTO.password(), u.getPassword());
         Mockito.verify(jwtTokenService).generateToken(u);
+        Mockito.verify(refreshTokenService).createSession(u);
     }
 
     @Test

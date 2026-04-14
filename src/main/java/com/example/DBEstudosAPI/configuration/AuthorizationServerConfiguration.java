@@ -16,35 +16,56 @@ import org.springframework.security.oauth2.server.authorization.config.annotatio
 import org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
-import java.util.UUID;
+import java.util.Base64;
 
 @Configuration
 @EnableWebSecurity
-public class AuthorizationServerConfiguration {
+public class  AuthorizationServerConfiguration {
 
-    private RSAKey gerarRSAKey() throws Exception{
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        keyPairGenerator.initialize(2048);
-        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+    private RSAKey rsaKey;
 
-        RSAPublicKey rsaPublicKey = (RSAPublicKey) keyPair.getPublic();
-        RSAPrivateKey rsaPrivateKey = (RSAPrivateKey) keyPair.getPrivate();
+    private RSAKey carregarRSAKey() throws Exception{
+        String untreatedPrivateKey = Files.readString(Path.of("keys/private_key.pem"));
+        String untreatedPublicKey = Files.readString(Path.of("keys/public_key.pem"));
+
+        String cleanedPrivateKey = untreatedPrivateKey
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace("-----END PRIVATE KEY-----", "")
+                .replaceAll("\\s", "");
+
+        String cleanedPublicKey = untreatedPublicKey
+                .replace("-----BEGIN PUBLIC KEY-----", "")
+                .replace("-----END PUBLIC KEY-----", "")
+                .replaceAll("\\s", "");
+
+        byte[] privateKeyByte = Base64.getDecoder().decode(cleanedPrivateKey);
+        byte[] publicKeyByte = Base64.getDecoder().decode(cleanedPublicKey);
+
+        PKCS8EncodedKeySpec privateKey = new PKCS8EncodedKeySpec(privateKeyByte);
+        X509EncodedKeySpec publicKey = new X509EncodedKeySpec(publicKeyByte);
+
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        RSAPrivateKey rsaPrivateKey = (RSAPrivateKey) keyFactory.generatePrivate(privateKey);
+        RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(publicKey);
 
         return new RSAKey
                 .Builder(rsaPublicKey)
                 .privateKey(rsaPrivateKey)
-                .keyID(UUID.randomUUID().toString())
+                .keyID("main-key")
                 .build();
     }
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() throws Exception {
-        RSAKey rsaKey = gerarRSAKey();
+        RSAKey rsaKey = carregarRSAKey();
         JWKSet jwkSet = new JWKSet(rsaKey);
         return new ImmutableJWKSet<>(jwkSet);
     }
@@ -64,7 +85,7 @@ public class AuthorizationServerConfiguration {
         return TokenSettings
                 .builder()
                 .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)
-                .accessTokenTimeToLive(Duration.ofMinutes(60))
+                .accessTokenTimeToLive(Duration.ofMinutes(15))
                 .refreshTokenTimeToLive(Duration.ofDays(7))
                 .build();
     }

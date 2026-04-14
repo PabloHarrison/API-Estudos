@@ -1,5 +1,6 @@
 package com.example.DBEstudosAPI.service;
 
+import com.example.DBEstudosAPI.dto.TokenResponseDTO;
 import com.example.DBEstudosAPI.dto.UsuarioLoginDTO;
 import com.example.DBEstudosAPI.dto.UsuarioPostDTO;
 import com.example.DBEstudosAPI.exceptions.UsuarioNaoEncontradoException;
@@ -14,8 +15,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -26,6 +25,7 @@ public class UsuarioService {
     private final PasswordEncoder encoder;
     private final UsuarioValidator validator;
     private final JwtTokenService jwtTokenService;
+    private final RefreshTokenService refreshTokenService;
 
     public Usuario findByLogin(String login) {
         return usuarioRepository.findByLogin(login).orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado!"));
@@ -45,14 +45,16 @@ public class UsuarioService {
         log.info("event=registered_usuario usuarioId={} login={}", usuarioSalvo.getId(), usuarioSalvo.getLogin());
     }
 
-    public String loginUser(UsuarioLoginDTO dto) {
+    public TokenResponseDTO loginUser(UsuarioLoginDTO dto) {
         Usuario usuario = findByEmail(dto.email());
         boolean senha = encoder.matches(dto.password(), usuario.getPassword());
         if (!senha) {
             authenticationFailed(dto.email());
         }
         log.info("event=usuario_authenticated usuarioId={}", usuario.getId());
-        return jwtTokenService.generateToken(usuario);
+        String accessToken = jwtTokenService.generateToken(usuario);
+        String refreshToken = refreshTokenService.createSession(usuario);
+        return new TokenResponseDTO(accessToken, refreshToken);
     }
 
     private void authenticationFailed(String email) {

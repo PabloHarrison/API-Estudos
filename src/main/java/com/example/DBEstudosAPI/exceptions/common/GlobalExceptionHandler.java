@@ -141,6 +141,38 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(restMenssagemErro);
     }
 
+    @ExceptionHandler(RefreshTokenExpiradoException.class)
+    public ResponseEntity<RestMenssagemErro> handleRefreshTokenExpiradoException(RefreshTokenExpiradoException e){
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+                e.getMessage(),
+                Set.of());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+    }
+
+    @ExceptionHandler(RefreshTokenInvalidoException.class)
+    public ResponseEntity<RestMenssagemErro> handleRefreshTokenInvalidoException(RefreshTokenInvalidoException e){
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+                e.getMessage(),
+                Set.of());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+    }
+
+    @ExceptionHandler(RefreshTokenRevogadoException.class)
+    public ResponseEntity<RestMenssagemErro> handleRefreshTokenRevogadoException(RefreshTokenRevogadoException e){
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+                e.getMessage(),
+                Set.of());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+    }
+
+    @ExceptionHandler(SessaoExpiradaException.class)
+    public ResponseEntity<RestMenssagemErro> handleSessaoExpiradaException(SessaoExpiradaException e){
+        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+                e.getMessage(),
+                Set.of());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<RestMenssagemErro> handleErrosNaoTratados(Exception e){
         RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.INTERNAL_SERVER_ERROR,

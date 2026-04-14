@@ -1,6 +1,7 @@
 package com.example.DBEstudosAPI.controller;
 
 import com.example.DBEstudosAPI.configuration.SecurityConfigurationTest;
+import com.example.DBEstudosAPI.dto.TokenResponseDTO;
 import com.example.DBEstudosAPI.dto.UsuarioLoginDTO;
 import com.example.DBEstudosAPI.dto.UsuarioPostDTO;
 import com.example.DBEstudosAPI.entities.Usuario;
@@ -89,7 +90,7 @@ public class UsuarioControllerTest {
         Usuario u = criarUsuario();
         UsuarioLoginDTO dto = new UsuarioLoginDTO(u.getEmail(), u.getPassword());
 
-        Mockito.when(service.loginUser(Mockito.any())).thenReturn("token");
+        Mockito.when(service.loginUser(Mockito.any())).thenReturn(new TokenResponseDTO("token", "refreshToken"));
 
         String json = mapper.writeValueAsString(dto);
 
@@ -97,7 +98,8 @@ public class UsuarioControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().string("token"));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.accessToken").value("token"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.refreshToken").value("refreshToken"));
     }
 
     @Test
@@ -105,7 +107,7 @@ public class UsuarioControllerTest {
         Usuario u = criarUsuario();
         UsuarioLoginDTO dto = new UsuarioLoginDTO(u.getEmail(), null);
 
-        Mockito.when(service.loginUser(Mockito.any())).thenReturn("token");
+        Mockito.when(service.loginUser(Mockito.any())).thenReturn(new TokenResponseDTO("token", "refreshToken"));
 
         String json = mapper.writeValueAsString(dto);
 

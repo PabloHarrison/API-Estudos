@@ -38,6 +38,8 @@ build/
 
 # Arquivos de configuração sensíveis
 /application.yml
+/application-test.yml
+/keys
 
 # Logs
 logs/

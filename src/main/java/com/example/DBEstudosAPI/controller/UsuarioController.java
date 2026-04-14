@@ -1,7 +1,10 @@
 package com.example.DBEstudosAPI.controller;
 
+import com.example.DBEstudosAPI.dto.RefreshTokenRequestDTO;
+import com.example.DBEstudosAPI.dto.TokenResponseDTO;
 import com.example.DBEstudosAPI.dto.UsuarioLoginDTO;
 import com.example.DBEstudosAPI.dto.UsuarioPostDTO;
+import com.example.DBEstudosAPI.service.RefreshTokenService;
 import com.example.DBEstudosAPI.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -44,7 +48,12 @@ public class UsuarioController {
             @ApiResponse(responseCode = "400", description = "Erro de validação ou JSON inválido."),
             @ApiResponse(responseCode = "401", description = "Credentiais inválidas.")
     })
-    public String logar(@RequestBody @Valid UsuarioLoginDTO dto) {
+    public TokenResponseDTO logar(@RequestBody @Valid UsuarioLoginDTO dto) {
         return usuarioService.loginUser(dto);
+    }
+
+    @PostMapping("/refresh")
+    public TokenResponseDTO refresh(@RequestBody RefreshTokenRequestDTO dto){
+        return refreshTokenService.refresh(dto);
     }
 }
