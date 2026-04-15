@@ -8,6 +8,7 @@ import com.example.DBEstudosAPI.exceptions.*;
 import com.example.DBEstudosAPI.repository.RefreshTokenRepository;
 import com.example.DBEstudosAPI.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenService {
@@ -24,14 +26,14 @@ public class RefreshTokenService {
     private final JwtTokenService tokenService;
     private final UsuarioRepository usuarioRepository;
 
-    public String generateRefreshToken(){
+    public String generateRefreshToken() {
         SecureRandom sr = new SecureRandom();
         byte[] seed = new byte[32];
         sr.nextBytes(seed);
         return Base64.getUrlEncoder().encodeToString(seed);
     }
 
-    public String createSession(Usuario usuario){
+    public String createSession(Usuario usuario) {
         String refreshTokenEncoded = generateRefreshToken();
         RefreshToken refreshTokenEntity = new RefreshToken();
         refreshTokenEntity.setTokenHash(refreshTokenEncoded);
@@ -43,7 +45,7 @@ public class RefreshTokenService {
         return refreshTokenEncoded;
     }
 
-    public String refreshSession(RefreshToken refreshToken){
+    public String refreshSession(RefreshToken refreshToken) {
         String refreshTokenEncoded = generateRefreshToken();
         RefreshToken refreshTokenEntity = new RefreshToken();
         refreshTokenEntity.setTokenHash(refreshTokenEncoded);
@@ -56,19 +58,26 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public TokenResponseDTO refresh(RefreshTokenRequestDTO dto ){
+    public TokenResponseDTO refresh(RefreshTokenRequestDTO dto) {
         RefreshToken refreshTokenEncontrado = refreshTokenRepository.findByTokenHash(dto.refreshToken()).orElseThrow(() -> new RefreshTokenInvalidoException("Refresh Token inválido!"));
-        if(refreshTokenEncontrado.isRevogado()){
+        if (refreshTokenEncontrado.isRevogado()) {
             throw new RefreshTokenRevogadoException("Refresh Token Revogado!");
         }
-        if(refreshTokenEncontrado.getExpiresAt().isBefore(Instant.now())){
+        if (refreshTokenEncontrado.getExpiresAt().isBefore(Instant.now())) {
             throw new RefreshTokenExpiradoException("Refresh Token Expirado!");
         }
-        if(refreshTokenEncontrado.getSessaoExpiresAt().isBefore(Instant.now())){
+        if (refreshTokenEncontrado.getSessaoExpiresAt().isBefore(Instant.now())) {
             throw new SessaoExpiradaException("Sessão de Refresh Token Expirada!");
         }
+        Usuario usuario = usuarioRepository.findById(refreshTokenEncontrado.getUserId()).orElseThrow(() -> {
+            UsuarioNaoEncontradoException e = new UsuarioNaoEncontradoException("Usuário não Encontrado!");
+            log.error(
+                    "event=user_not_found_during_token_refresh user_id={} message=unexpected_state",
+                    refreshTokenEncontrado.getUserId(), e);
+            return e;
+        });
+
         refreshTokenEncontrado.setRevogado(true);
-        Usuario usuario = usuarioRepository.findById(refreshTokenEncontrado.getUserId()).orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não Encontrado!"));
         String accessToken = tokenService.generateToken(usuario);
         String refreshToken = refreshSession(refreshTokenEncontrado);
         refreshTokenRepository.save(refreshTokenEncontrado);

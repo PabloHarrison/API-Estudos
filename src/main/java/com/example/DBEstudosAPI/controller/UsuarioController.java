@@ -53,7 +53,16 @@ public class UsuarioController {
     }
 
     @PostMapping("/refresh")
-    public TokenResponseDTO refresh(@RequestBody RefreshTokenRequestDTO dto){
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            summary = "Renovar access token e refresh token",
+            description = "Renovar os tokens do usuário a partir do refresh token anterior.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Tokens renovadas com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Erro de validação ou JSON inválido."),
+            @ApiResponse(responseCode = "401", description = "Refresh token inválido, expirado ou revogado.")
+    })
+    public TokenResponseDTO refresh(@RequestBody @Valid RefreshTokenRequestDTO dto){
         return refreshTokenService.refresh(dto);
     }
 }
