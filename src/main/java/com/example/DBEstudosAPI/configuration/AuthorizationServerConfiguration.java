@@ -33,8 +33,11 @@ public class  AuthorizationServerConfiguration {
     private RSAKey rsaKey;
 
     private RSAKey carregarRSAKey() throws Exception{
-        String untreatedPrivateKey = Files.readString(Path.of("keys/private_key.pem"));
-        String untreatedPublicKey = Files.readString(Path.of("keys/public_key.pem"));
+        String privatePath = System.getenv().getOrDefault("PRIVATE_KEY_PATH", "keys/private_key.pem");
+        String publicPath = System.getenv().getOrDefault("PUBLIC_KEY_PATH", "keys/public_key.pem");
+
+        String untreatedPrivateKey = Files.readString(Path.of(privatePath));
+        String untreatedPublicKey = Files.readString(Path.of(publicPath));
 
         String cleanedPrivateKey = untreatedPrivateKey
                 .replace("-----BEGIN PRIVATE KEY-----", "")
