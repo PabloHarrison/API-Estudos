@@ -39,7 +39,6 @@ build/
 # Arquivos de configuração sensíveis
 /application.yml
 /application-test.yml
-src/main/resources/application.yml
 docker-compose.yml
 /keys
 
