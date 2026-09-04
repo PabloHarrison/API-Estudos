@@ -101,11 +101,8 @@ public class RegistroService {
         if (dto.data() != null) {
             registro.setData(dto.data());
         }
-        if (dto.horasEstudadas() != null) {
-            registro.setHorasEstudadas(dto.horasEstudadas());
-        }
-        if (dto.anotacao() != null) {
-            registro.setAnotacao(dto.anotacao());
+        if (dto.tempoEmMinutos() != null) {
+            registro.setTempoEmMinutos(dto.tempoEmMinutos());
         }
         if (dto.resumo() != null) {
             registro.setResumo(dto.resumo());

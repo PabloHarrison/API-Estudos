@@ -11,7 +11,7 @@ spring:
     show-sql: true
     open-in-view: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -20,6 +20,8 @@ spring:
     public-key-path: ${JWT_PUBLIC_KEY_PATH}
     refresh-token-duration: ${REFRESH_TOKEN_DURATION}
     session-duration: ${SESSION_DURATION}
+  flyway:
+    enabled: true
 
 logging:
   file:

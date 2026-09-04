@@ -56,12 +56,12 @@ public class RegistroSpecs {
                 return cb.conjunction();
             }
             if(min != null && max != null){
-                return cb.between(root.get("horasEstudadas"), min, max);
+                return cb.between(root.get("tempoEmMinutos"), min, max);
             }
             if(min != null){
-                return cb.greaterThanOrEqualTo(root.get("horasEstudadas"), min);
+                return cb.greaterThanOrEqualTo(root.get("tempoEmMinutos"), min);
             }
-            return cb.lessThanOrEqualTo(root.get("horasEstudadas"), max);
+            return cb.lessThanOrEqualTo(root.get("tempoEmMinutos"), max);
         };
     }
 

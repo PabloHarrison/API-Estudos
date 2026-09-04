@@ -10,8 +10,7 @@ import java.util.UUID;
 public record RegistroResponseDTO(
         UUID id,
         LocalDate data,
-        Integer horasEstudadas,
-        String anotacao,
+        Integer tempoEmMinutos,
         String resumo,
         String planejamento,
         Set<CategoriaResponseDTO> categorias) {

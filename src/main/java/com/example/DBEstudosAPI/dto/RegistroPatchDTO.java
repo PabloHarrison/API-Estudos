@@ -12,9 +12,8 @@ import java.util.UUID;
 @Schema(name = "UpdateRegistroRequest")
 public record RegistroPatchDTO(
         @PastOrPresent LocalDate data,
-        @Positive Integer horasEstudadas,
-        @Size(max = 1000) String anotacao,
-        @Size(max = 300) String resumo,
-        @Size(max = 300) String planejamento,
+        @Positive Integer tempoEmMinutos,
+        @Size(max = 2000) String resumo,
+        @Size(max = 2000) String planejamento,
         Set<UUID> categoriasIds) {
 }

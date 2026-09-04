@@ -71,9 +71,6 @@ public class CategoriaService {
     public void delete(UUID id){
         Categoria categoria = findEntityById(id);
         UUID usuarioId = categoria.getUsuario().getId();
-        if(existRegistro(categoria)){
-            throw new CategoriaEmUsoException("Não é possivel deletar uma categoria que esteja sendo usada por um registro.");
-        }
         categoriaRepository.delete(categoria);
         log.info("event=categoria_deleted categoriaId={} usuarioId={} nomeCategoria={}", categoria.getId(), usuarioId, categoria.getNomeCategoria());
     }

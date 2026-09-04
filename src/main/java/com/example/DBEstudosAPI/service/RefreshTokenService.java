@@ -54,7 +54,7 @@ public class RefreshTokenService {
         String refreshTokenHash = encodeRefreshTokenToHash(refreshTokenEncoded);
         RefreshToken refreshTokenEntity = new RefreshToken();
         refreshTokenEntity.setTokenHash(refreshTokenHash);
-        refreshTokenEntity.setUserId(usuarioId);
+        refreshTokenEntity.setUsuario_id(usuarioId);
         refreshTokenEntity.setExpiresAt(Instant.now().plus(jwtProperties.getRefreshTokenDuration()));
         refreshTokenEntity.setSessaoExpiresAt(sessaoExpiresAt);
         refreshTokenEntity.setRevogado(false);
@@ -74,17 +74,17 @@ public class RefreshTokenService {
         if (refreshTokenEncontrado.getSessaoExpiresAt().isBefore(Instant.now())) {
             throw new SessaoExpiradaException("Sessão de Refresh Token Expirada!");
         }
-        Usuario usuario = usuarioRepository.findById(refreshTokenEncontrado.getUserId()).orElseThrow(() -> {
+        Usuario usuario = usuarioRepository.findById(refreshTokenEncontrado.getUsuario_id()).orElseThrow(() -> {
             UsuarioNaoEncontradoException e = new UsuarioNaoEncontradoException("Usuário não Encontrado!");
             log.error(
                     "event=user_not_found_during_token_refresh user_id={} message=unexpected_state",
-                    refreshTokenEncontrado.getUserId(), e);
+                    refreshTokenEncontrado.getUsuario_id(), e);
             return e;
         });
 
         refreshTokenEncontrado.setRevogado(true);
         String accessToken = tokenService.generateToken(usuario);
-        String refreshToken = buildAndSaveRefreshToken(refreshTokenEncontrado.getUserId(), refreshTokenEncontrado.getSessaoExpiresAt());
+        String refreshToken = buildAndSaveRefreshToken(refreshTokenEncontrado.getUsuario_id(), refreshTokenEncontrado.getSessaoExpiresAt());
         refreshTokenRepository.save(refreshTokenEncontrado);
         return new TokenResponseDTO(accessToken, refreshToken);
     }

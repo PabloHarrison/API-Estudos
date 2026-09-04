@@ -20,8 +20,7 @@ public class Registro {
     @Column(nullable = false)
     private LocalDate data;
     @Column(nullable = false)
-    private Integer horasEstudadas;
-    private String anotacao;
+    private Integer tempoEmMinutos;
     private String resumo;
     private String planejamento;
     @JoinTable(name = "registro_categorias", joinColumns = @JoinColumn(name = "registro_id"), inverseJoinColumns = @JoinColumn(name = "categoria_id"))
