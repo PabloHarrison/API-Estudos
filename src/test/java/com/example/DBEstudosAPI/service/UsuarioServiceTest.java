@@ -131,7 +131,7 @@ public class UsuarioServiceTest {
         Mockito.when(usuarioRepository.findByEmail(Mockito.any())).thenReturn(Optional.of(u));
         Mockito.when(encoder.matches(Mockito.any(), Mockito.any())).thenReturn(true);
         Mockito.when(jwtTokenService.generateToken(u)).thenReturn("token");
-        Mockito.when(refreshTokenService.createSession(u)).thenReturn("refreshToken");
+        Mockito.when(refreshTokenService.buildAndSaveRefreshToken(u.getId(), Mockito.any())).thenReturn("refreshToken");
 
         TokenResponseDTO tokens= service.loginUser(loginDTO);
 
@@ -142,7 +142,7 @@ public class UsuarioServiceTest {
         Mockito.verify(usuarioRepository).findByEmail(loginDTO.email());
         Mockito.verify(encoder).matches(loginDTO.password(), u.getPassword());
         Mockito.verify(jwtTokenService).generateToken(u);
-        Mockito.verify(refreshTokenService).createSession(u);
+        Mockito.verify(refreshTokenService).buildAndSaveRefreshToken(u.getId(), Mockito.any());
     }
 
     @Test

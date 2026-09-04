@@ -15,7 +15,6 @@ import com.example.DBEstudosAPI.repository.RegistroRepository;
 import com.example.DBEstudosAPI.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,11 +31,12 @@ public class CategoriaService {
     private final RegistroRepository registroRepository;
     private final CategoriaMapper mapper;
     private final UsuarioRepository usuarioRepository;
+    private final AuthenticatedUserService authenticatedUserService;
 
     @Transactional
     public CategoriaResponseDTO save(CategoriaPostDTO dto){
         Categoria categoria = mapper.toEntity(dto);
-        UUID id = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
+        UUID id = authenticatedUserService.getCurrentUserId();
         Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não encontrado."));
         categoria.setUsuario(usuario);
         Categoria categoriaSalva = categoriaRepository.save(categoria);
@@ -54,10 +54,13 @@ public class CategoriaService {
     }
 
     public Set<CategoriaResponseDTO> search(String nomeCategoria){
+        UUID id = authenticatedUserService.getCurrentUserId();
         if(nomeCategoria == null){
-            throw new CategoriaNaoEncontradaException("Parametro inválido!");
+            return categoriaRepository.findAllByUsuarioId(id)
+                    .stream()
+                    .map(mapper::toDTO)
+                    .collect(Collectors.toSet());
         }
-        UUID id = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
         return categoriaRepository.findAllByNomeCategoriaContainingIgnoreCaseAndUsuarioId(nomeCategoria, id)
                 .stream()
                 .map(mapper::toDTO)
@@ -78,11 +81,7 @@ public class CategoriaService {
     @Transactional
     public CategoriaResponseDTO update(UUID id, CategoriaPatchDTO dto){
         Categoria categoria = findEntityById(id);
-        if(dto.nomeCategoria() == null || dto.nomeCategoria().isBlank()){
-            throw new CategoriaNaoPermitidaException("É obrigatorio nomear a categoria!");
-        }else{
-            categoria.setNomeCategoria(dto.nomeCategoria());
-        }
+        categoria.setNomeCategoria(dto.nomeCategoria());
         UUID usuarioId = categoria.getUsuario().getId();
         categoriaRepository.save(categoria);
         log.info("event=categoria_updated categoriaId={} usuarioId={} nomeCategoria={} ", categoria.getId(), usuarioId, categoria.getNomeCategoria());
@@ -94,7 +93,7 @@ public class CategoriaService {
     }
 
     private Categoria findOwnerCategory(UUID id){
-        UUID idUsuario = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
+        UUID idUsuario = authenticatedUserService.getCurrentUserId();
         Categoria categoria = categoriaRepository.findById(id).orElseThrow(() -> new CategoriaNaoEncontradaException("Categoria não encontrada."));
         if(!categoria.getUsuario().getId().equals(idUsuario)){
             throw new CategoriaNaoEncontradaException("Categoria não encontrada.");

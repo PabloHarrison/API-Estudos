@@ -9,4 +9,5 @@ public interface CategoriaRepository extends JpaRepository<Categoria, UUID> {
 
     Set<Categoria> findAllByNomeCategoriaContainingIgnoreCaseAndUsuarioId(String nomeCategoria, UUID id);
     Set<Categoria> findAllByIdInAndUsuarioId(Set<UUID> ids, UUID usuarioId);
+    Set<Categoria> findAllByUsuarioId(UUID usuarioId);
 }

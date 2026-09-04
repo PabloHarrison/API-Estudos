@@ -92,7 +92,7 @@ public class RefreshTokenServiceTest {
 
         Mockito.when(refreshTokenRepository.save(Mockito.any())).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
-        String refreshToken = refreshTokenService.createSession(u);
+        String refreshToken = refreshTokenService.buildAndSaveRefreshToken(u.getId(), Mockito.any());
 
         ArgumentCaptor<RefreshToken> captor = ArgumentCaptor.forClass(RefreshToken.class);
 
@@ -115,7 +115,7 @@ public class RefreshTokenServiceTest {
 
         Mockito.when(refreshTokenRepository.save(Mockito.any())).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
-        String refreshTokenSession = refreshTokenService.refreshSession(refreshToken);
+        String refreshTokenSession = refreshTokenService.buildAndSaveRefreshToken(refreshToken.getUserId(), refreshToken.getSessaoExpiresAt());
 
         ArgumentCaptor<RefreshToken> captor = ArgumentCaptor.forClass(RefreshToken.class);
 

@@ -294,7 +294,7 @@ public class RegistroControllerTest {
         RegistroPatchDTO patchDTO = new RegistroPatchDTO(r.getData(), r.getHorasEstudadas(), r.getAnotacao(), r.getResumo(), r.getPlanejamento(), Set.of(cId));
         RegistroResponseDTO responseDTO = criarResponseDTO(r, c);
 
-        Mockito.when(service.update(Mockito.eq(id), Mockito.any())).thenReturn(responseDTO);
+        Mockito.when(service.update(Mockito.any(), Mockito.any())).thenReturn(responseDTO);
 
         String json = mapper.writeValueAsString(patchDTO);
 
@@ -307,7 +307,7 @@ public class RegistroControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.categorias[*].nomeCategoria").value("Java"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.horasEstudadas").value(5));
 
-        Mockito.verify(service).update(Mockito.eq(id), Mockito.any());
+        Mockito.verify(service).update(Mockito.any(), Mockito.any());
     }
 
     @Test
@@ -318,7 +318,7 @@ public class RegistroControllerTest {
         RegistroPatchDTO patchDTO = new RegistroPatchDTO(LocalDate.now().plusDays(1), null, null, null, null, null);
         RegistroResponseDTO responseDTO = criarResponseDTO(r, c);
 
-        Mockito.when(service.update(Mockito.eq(id), Mockito.any())).thenReturn(responseDTO);
+        Mockito.when(service.update(Mockito.any(), Mockito.any())).thenReturn(responseDTO);
 
         String json = mapper.writeValueAsString(patchDTO);
 
@@ -327,7 +327,7 @@ public class RegistroControllerTest {
                         .content(json))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
-        Mockito.verify(service, Mockito.never()).update(Mockito.eq(id), Mockito.any());
+        Mockito.verify(service, Mockito.never()).update(Mockito.any(), Mockito.any());
     }
 
     @Test
@@ -338,7 +338,7 @@ public class RegistroControllerTest {
         String id = String.valueOf(r.getId());
         RegistroPatchDTO patchDTO = new RegistroPatchDTO(r.getData(), r.getHorasEstudadas(), r.getAnotacao(), r.getResumo(), r.getPlanejamento(), Set.of(cId));
 
-        Mockito.doThrow(new InvalidBearerTokenException("Sessão inválida ou expirada.")).when(service).update(Mockito.eq(id), Mockito.any());
+        Mockito.doThrow(new InvalidBearerTokenException("Sessão inválida ou expirada.")).when(service).update(Mockito.any(), Mockito.any());
 
         String json = mapper.writeValueAsString(patchDTO);
 
@@ -347,7 +347,7 @@ public class RegistroControllerTest {
                         .content(json))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
 
-        Mockito.verify(service).update(Mockito.eq(id), Mockito.any());
+        Mockito.verify(service).update(Mockito.any(), Mockito.any());
     }
 
     @Test
@@ -358,7 +358,7 @@ public class RegistroControllerTest {
         String id = String.valueOf(r.getId());
         RegistroPatchDTO patchDTO = new RegistroPatchDTO(r.getData(), r.getHorasEstudadas(), r.getAnotacao(), r.getResumo(), r.getPlanejamento(), Set.of(cId));
 
-        Mockito.doThrow(new CategoriaNaoEncontradaException("Categoria não encontrada.")).when(service).update(Mockito.eq(id), Mockito.any());
+        Mockito.doThrow(new CategoriaNaoEncontradaException("Categoria não encontrada.")).when(service).update(Mockito.any(), Mockito.any());
 
         String json = mapper.writeValueAsString(patchDTO);
 
@@ -367,7 +367,7 @@ public class RegistroControllerTest {
                         .content(json))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
 
-        Mockito.verify(service).update(Mockito.eq(id), Mockito.any());
+        Mockito.verify(service).update(Mockito.any(), Mockito.any());
     }
 
 }

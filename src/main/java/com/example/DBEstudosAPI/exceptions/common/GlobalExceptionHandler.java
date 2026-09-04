@@ -21,173 +21,173 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RegistroNaoEncontradoException.class)
-    public ResponseEntity<RestMenssagemErro> handleRegistroNaoEncontrado(RegistroNaoEncontradoException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.NOT_FOUND, e.getMessage(), Set.of());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(restMenssagemErro);
+    public ResponseEntity<RestMensagemErro> handleRegistroNaoEncontrado(RegistroNaoEncontradoException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.NOT_FOUND, e.getMessage(), Set.of());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(restMensagemErro);
     }
 
     @ExceptionHandler(CategoriaNaoEncontradaException.class)
-    public ResponseEntity<RestMenssagemErro> handleCategoriaNaoEncontradaException(CategoriaNaoEncontradaException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.NOT_FOUND, e.getMessage(), Set.of());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(restMenssagemErro);
+    public ResponseEntity<RestMensagemErro> handleCategoriaNaoEncontradaException(CategoriaNaoEncontradaException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.NOT_FOUND, e.getMessage(), Set.of());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(restMensagemErro);
     }
 
     @ExceptionHandler(UsuarioNaoEncontradoException.class)
-    public ResponseEntity<RestMenssagemErro> handleUsuarioNaoEncontradoException(UsuarioNaoEncontradoException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(
+    public ResponseEntity<RestMensagemErro> handleUsuarioNaoEncontradoException(UsuarioNaoEncontradoException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(
                 HttpStatus.NOT_FOUND,
                 e.getMessage(),
                 Set.of());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(restMensagemErro);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<RestMenssagemErro> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
+    public ResponseEntity<RestMensagemErro> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
         Set<RestCampoErro> erros = e.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(fe -> new RestCampoErro(fe.getField(), fe.getDefaultMessage()))
                 .collect(Collectors.toSet());
 
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(
+        RestMensagemErro restMensagemErro = new RestMensagemErro(
                 HttpStatus.BAD_REQUEST, "Erro de validação", erros);
         log.warn("event=validation_failed status=400 error_count={} fields={} message=invalid_request_data",
                 erros.size(),
                 erros);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restMensagemErro);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<RestMenssagemErro> handleHttpMessageNotReadableException(HttpMessageNotReadableException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.BAD_REQUEST,
+    public ResponseEntity<RestMensagemErro> handleHttpMessageNotReadableException(HttpMessageNotReadableException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.BAD_REQUEST,
                 "JSON inválido ou campo com formato incorreto",
                 Set.of());
         log.warn("event=request_malformed status=400 error={} message=invalid_request_body", e.getMessage());
-        return ResponseEntity.badRequest().body(restMenssagemErro);
+        return ResponseEntity.badRequest().body(restMensagemErro);
     }
 
     @ExceptionHandler(CategoriaNaoPermitidaException.class)
-    public ResponseEntity<RestMenssagemErro> handleCategoriaNaoPermitidaException(CategoriaNaoPermitidaException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.BAD_REQUEST,
+    public ResponseEntity<RestMensagemErro> handleCategoriaNaoPermitidaException(CategoriaNaoPermitidaException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.BAD_REQUEST,
                 e.getMessage(),
                 Set.of());
         log.warn("event=business_rule_violation message=category_not_allowed detail={}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restMensagemErro);
     }
 
     @ExceptionHandler(CategoriaEmUsoException.class)
-    public ResponseEntity<RestMenssagemErro> handleCategoriaEmUsoException(CategoriaEmUsoException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.CONFLICT,
+    public ResponseEntity<RestMensagemErro> handleCategoriaEmUsoException(CategoriaEmUsoException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.CONFLICT,
                 e.getMessage(),
                 Set.of());
         log.warn("event=category_in_use status=409 message=resource_in_use detail={}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(restMensagemErro);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<RestMenssagemErro> handleIllegalArgumentException(IllegalArgumentException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.BAD_REQUEST,
+    public ResponseEntity<RestMensagemErro> handleIllegalArgumentException(IllegalArgumentException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.BAD_REQUEST,
                 e.getMessage(),
                 Set.of());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(restMensagemErro);
     }
 
     @ExceptionHandler(LoginCadastradoException.class)
-    public ResponseEntity<RestMenssagemErro> handleLoginCadastradoException(LoginCadastradoException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.CONFLICT,
+    public ResponseEntity<RestMensagemErro> handleLoginCadastradoException(LoginCadastradoException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.CONFLICT,
                 e.getMessage(),
                 Set.of());
         log.warn("event=duplicate_registration_by_login status=409 detail={}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(restMensagemErro);
     }
 
     @ExceptionHandler(EmailCadastradoException.class)
-    public ResponseEntity<RestMenssagemErro> handleEmailCadastradoException(EmailCadastradoException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.CONFLICT,
+    public ResponseEntity<RestMensagemErro> handleEmailCadastradoException(EmailCadastradoException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.CONFLICT,
                 e.getMessage(),
                 Set.of());
         log.warn("event=duplicate_registration_by_email status=409 detail={}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(restMensagemErro);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<RestMenssagemErro> handleBadCredentialsException(BadCredentialsException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+    public ResponseEntity<RestMensagemErro> handleBadCredentialsException(BadCredentialsException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.UNAUTHORIZED,
                 e.getMessage(),
                 Set.of());
         log.warn("event=authentication_failed message=invalid_credentials");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMensagemErro);
     }
 
     @ExceptionHandler(InvalidBearerTokenException.class)
-    public ResponseEntity<RestMenssagemErro> handleAuthenticationException(InvalidBearerTokenException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+    public ResponseEntity<RestMensagemErro> handleAuthenticationException(InvalidBearerTokenException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.UNAUTHORIZED,
                 "Sessão inválida ou expirada",
                 Set.of());
         log.warn("event=authentication_token_failure status=401 reason=invalid_bearer_token");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMensagemErro);
     }
 
     @ExceptionHandler(InsufficientAuthenticationException.class)
-    public ResponseEntity<RestMenssagemErro> handleInsufficientAuthenticationException(InsufficientAuthenticationException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+    public ResponseEntity<RestMensagemErro> handleInsufficientAuthenticationException(InsufficientAuthenticationException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.UNAUTHORIZED,
                 "É necessária autenticação completa para acessar este recurso.",
                 Set.of());
         log.warn("event=authentication_missing status=401 message=insufficient_authentication");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMensagemErro);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<RestMenssagemErro> handleAccessDeniedException(AccessDeniedException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.FORBIDDEN,
+    public ResponseEntity<RestMensagemErro> handleAccessDeniedException(AccessDeniedException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.FORBIDDEN,
                 "Você não tem permissão para acessar este recurso.",
                 Set.of());
         log.warn("event=access_denied status=403 message=forbidden");
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(restMensagemErro);
     }
 
     @ExceptionHandler(RefreshTokenExpiradoException.class)
-    public ResponseEntity<RestMenssagemErro> handleRefreshTokenExpiradoException(RefreshTokenExpiradoException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+    public ResponseEntity<RestMensagemErro> handleRefreshTokenExpiradoException(RefreshTokenExpiradoException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.UNAUTHORIZED,
                 e.getMessage(),
                 Set.of());
         log.warn("event=refresh_token_expired status=401 message=token_expired");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMensagemErro);
     }
 
     @ExceptionHandler(RefreshTokenInvalidoException.class)
-    public ResponseEntity<RestMenssagemErro> handleRefreshTokenInvalidoException(RefreshTokenInvalidoException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+    public ResponseEntity<RestMensagemErro> handleRefreshTokenInvalidoException(RefreshTokenInvalidoException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.UNAUTHORIZED,
                 e.getMessage(),
                 Set.of());
         log.warn("event=refresh_token_invalid status=401 message=invalid_token");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMensagemErro);
     }
 
     @ExceptionHandler(RefreshTokenRevogadoException.class)
-    public ResponseEntity<RestMenssagemErro> handleRefreshTokenRevogadoException(RefreshTokenRevogadoException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+    public ResponseEntity<RestMensagemErro> handleRefreshTokenRevogadoException(RefreshTokenRevogadoException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.UNAUTHORIZED,
                 e.getMessage(),
                 Set.of());
         log.warn("event=refresh_token_revoked status=401 message=token_revoked");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMensagemErro);
     }
 
     @ExceptionHandler(SessaoExpiradaException.class)
-    public ResponseEntity<RestMenssagemErro> handleSessaoExpiradaException(SessaoExpiradaException e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.UNAUTHORIZED,
+    public ResponseEntity<RestMensagemErro> handleSessaoExpiradaException(SessaoExpiradaException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.UNAUTHORIZED,
                 e.getMessage(),
                 Set.of());
         log.warn("event=session_expired status=401 message=session_expired");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMenssagemErro);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMensagemErro);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<RestMenssagemErro> handleErrosNaoTratados(Exception e){
-        RestMenssagemErro restMenssagemErro = new RestMenssagemErro(HttpStatus.INTERNAL_SERVER_ERROR,
+    public ResponseEntity<RestMensagemErro> handleErrosNaoTratados(Exception e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Ocorreu um erro inesperado.",
                 Set.of());
         log.error("event=unexpected_error status=500 exception={} message=internal_server_error", e.getClass().getSimpleName(), e);
-        return ResponseEntity.internalServerError().body(restMenssagemErro);
+        return ResponseEntity.internalServerError().body(restMensagemErro);
     }
 }

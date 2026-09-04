@@ -13,8 +13,8 @@ import java.util.UUID;
 public record RegistroPatchDTO(
         @PastOrPresent LocalDate data,
         @Positive Integer horasEstudadas,
-        @Size String anotacao,
-        @Size String resumo,
-        @Size String planejamento,
+        @Size(max = 1000) String anotacao,
+        @Size(max = 300) String resumo,
+        @Size(max = 300) String planejamento,
         Set<UUID> categoriasIds) {
 }

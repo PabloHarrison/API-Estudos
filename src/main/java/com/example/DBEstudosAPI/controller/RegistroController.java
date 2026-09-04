@@ -15,12 +15,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("registros")
 @RequiredArgsConstructor
 @Tag(name = "Registro")
+@CrossOrigin
 public class RegistroController {
 
     private final RegistroService service;
@@ -36,8 +38,10 @@ public class RegistroController {
             @ApiResponse(responseCode = "400", description = "Erro de validação ou JSON inválido."),
             @ApiResponse(responseCode = "404", description = "Uma ou mais categorias não existem.")
     })
-    public void salvar(@RequestBody @Valid RegistroPostDTO postDTO){
-        service.save(postDTO);
+    public ResponseEntity<RegistroResponseDTO> salvar(@RequestBody @Valid RegistroPostDTO postDTO){
+        RegistroResponseDTO responseDTO = service.save(postDTO);
+        URI location = URI.create("/registros/" + responseDTO.id());
+        return ResponseEntity.created(location).body(responseDTO);
     }
 
     @GetMapping("{id}")
@@ -86,8 +90,8 @@ public class RegistroController {
             @ApiResponse(responseCode = "401", description = "Sessão inválida ou expirada."),
             @ApiResponse(responseCode = "404", description = "Registro não encontrado")
     })
-    public ResponseEntity<Void> deletar(@PathVariable("id") String id){
-        service.delete(UUID.fromString(id));
+    public ResponseEntity<Void> deletar(@PathVariable("id") UUID id){
+        service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -101,7 +105,7 @@ public class RegistroController {
             @ApiResponse(responseCode = "401", description = "Sessão inválida ou expirada."),
             @ApiResponse(responseCode = "404", description = "Recurso não encontrado.")
     })
-    public ResponseEntity<RegistroResponseDTO> update(@PathVariable("id") String id, @RequestBody @Valid RegistroPatchDTO dto){
+    public ResponseEntity<RegistroResponseDTO> update(@PathVariable("id") UUID id, @RequestBody @Valid RegistroPatchDTO dto){
         return ResponseEntity.ok(service.update(id, dto));
     }
 }

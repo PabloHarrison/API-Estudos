@@ -1,5 +1,6 @@
 package com.example.DBEstudosAPI.service;
 
+import com.example.DBEstudosAPI.configuration.JwtProperties;
 import com.example.DBEstudosAPI.dto.TokenResponseDTO;
 import com.example.DBEstudosAPI.dto.UsuarioLoginDTO;
 import com.example.DBEstudosAPI.dto.UsuarioPostDTO;
@@ -15,6 +16,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -26,6 +29,7 @@ public class UsuarioService {
     private final UsuarioValidator validator;
     private final JwtTokenService jwtTokenService;
     private final RefreshTokenService refreshTokenService;
+    private final JwtProperties jwtProperties;
 
     public Usuario findByLogin(String login) {
         return usuarioRepository.findByLogin(login).orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado!"));
@@ -42,7 +46,7 @@ public class UsuarioService {
         usuario.setPassword(encoder.encode(dto.password()));
         usuario.setRoles(Roles.USER);
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
-        log.info("event=registered_usuario usuarioId={} login={}", usuarioSalvo.getId(), usuarioSalvo.getLogin());
+        log.info("event=user_registered usuarioId={}", usuarioSalvo.getId());
     }
 
     public TokenResponseDTO loginUser(UsuarioLoginDTO dto) {
@@ -53,12 +57,12 @@ public class UsuarioService {
         }
         log.info("event=usuario_authenticated usuarioId={}", usuario.getId());
         String accessToken = jwtTokenService.generateToken(usuario);
-        String refreshToken = refreshTokenService.createSession(usuario);
+        String refreshToken = refreshTokenService.buildAndSaveRefreshToken(usuario.getId(), Instant.now().plus(jwtProperties.getSessionDuration()));
         return new TokenResponseDTO(accessToken, refreshToken);
     }
 
     private void authenticationFailed(String email) {
-        log.warn("event=authentication_failed email={}", email);
+        log.warn("event=authentication_failed");
         throw new BadCredentialsException("Credencial errada!");
     }
 }

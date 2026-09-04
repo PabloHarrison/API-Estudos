@@ -19,14 +19,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,14 +39,15 @@ public class RegistroService {
     private final CategoriaRepository categoriaRepository;
     private final RegistroMapper registroMapper;
     private final UsuarioRepository usuarioRepository;
+    private final AuthenticatedUserService authenticatedUserService;
 
     @Transactional
-    public RegistroResponseDTO save(RegistroPostDTO dto){
+    public RegistroResponseDTO save(RegistroPostDTO dto) {
         Registro registro = registroMapper.toEntity(dto);
-        UUID id = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
+        UUID id = authenticatedUserService.getCurrentUserId();
         Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não encontrado."));
         Set<Categoria> categorias = new HashSet<>(categoriaRepository.findAllByIdInAndUsuarioId(dto.categoriasIds(), usuario.getId()));
-        if(categorias.size() != new HashSet<>(dto.categoriasIds()).size()){
+        if (categorias.size() != new HashSet<>(dto.categoriasIds()).size()) {
             throw new CategoriaNaoEncontradaException("Uma ou mais categorias não existem!");
         }
         registro.setCategorias(categorias);
@@ -54,71 +57,66 @@ public class RegistroService {
         return registroMapper.toDTO(registroSalvo);
     }
 
-    public RegistroResponseDTO findById(UUID id){
+    public RegistroResponseDTO findById(UUID id) {
         Registro registro = repository.buscarPorIdComCategorias(id).orElseThrow(() -> new RegistroNaoEncontradoException("Registro não encontrado!"));
-        UUID idUsuario = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
-        if(!registro.getUsuario().getId().equals(idUsuario)){
+        UUID idUsuario = authenticatedUserService.getCurrentUserId();
+        if (!registro.getUsuario().getId().equals(idUsuario)) {
             throw new RegistroNaoEncontradoException("Registro não encontrado.");
         }
         return registroMapper.toDTO(registro);
     }
 
     @Transactional
-    public void delete(UUID id){
+    public void delete(UUID id) {
         Registro registro = findOwnerRegistration(id);
         repository.delete(registro);
         log.info("event=registro_deleted registroId={} usuarioId={}", registro.getId(), registro.getUsuario().getId());
     }
 
-    public Page<RegistroResponseDTO> search(Integer ano, Integer mes, Integer dia, String nomeCategoria, Integer min, Integer max, Integer pagina, Integer tamanhoPagina){
-
-        UUID id = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
-
+    public Page<RegistroResponseDTO> search(Integer ano, Integer mes, Integer dia, String nomeCategoria, Integer min, Integer max, Integer pagina, Integer tamanhoPagina) {
+        UUID id = authenticatedUserService.getCurrentUserId();
         Specification<Registro> specs = RegistroSpecs.usuarioIdEquals(id);
 
-        if(ano != null && mes != null && dia != null){
+        if (ano != null && mes != null && dia != null) {
             specs = specs.and(RegistroSpecs.dataAnoMesDiaEquals(ano, mes, dia));
-        }
-        else if(ano != null && mes != null){
+        } else if (ano != null && mes != null) {
             specs = specs.and(RegistroSpecs.dataAnoMesEquals(ano, mes));
-        }
-        else if(ano != null ){
+        } else if (ano != null) {
             specs = specs.and(RegistroSpecs.dataAnoEquals(ano));
         }
-        if(nomeCategoria != null){
+        if (nomeCategoria != null) {
             specs = specs.and(RegistroSpecs.nomeCategoriaLike(nomeCategoria));
         }
-        if(min != null || max != null){
+        if (min != null || max != null) {
             specs = specs.and(RegistroSpecs.tempoBetween(min, max));
         }
-        Pageable pageRequest = PageRequest.of(pagina, tamanhoPagina);
+        Pageable pageRequest = PageRequest.of(pagina, tamanhoPagina, Sort.by("data").descending());
         return repository.findAll(specs, pageRequest).map(registroMapper::toDTO);
     }
 
     @Transactional
-    public RegistroResponseDTO update(String id, RegistroPatchDTO dto){
-        UUID registroId = UUID.fromString(id);
-        Registro registro = findOwnerRegistration(registroId);
+    public RegistroResponseDTO update(UUID id, RegistroPatchDTO dto) {
+        Registro registro = findOwnerRegistration(id);
 
-        if(dto.data() != null){
+        if (dto.data() != null) {
             registro.setData(dto.data());
         }
-        if(dto.horasEstudadas() != null){
+        if (dto.horasEstudadas() != null) {
             registro.setHorasEstudadas(dto.horasEstudadas());
         }
-        if(dto.anotacao() != null){
+        if (dto.anotacao() != null) {
             registro.setAnotacao(dto.anotacao());
         }
-        if(dto.resumo() != null){
+        if (dto.resumo() != null) {
             registro.setResumo(dto.resumo());
         }
-        if(dto.planejamento() != null){
+        if (dto.planejamento() != null) {
             registro.setPlanejamento(dto.planejamento());
         }
-        if(dto.categoriasIds() != null){
+        if (dto.categoriasIds() != null) {
             Set<Categoria> categorias = new HashSet<>(categoriaRepository.findAllByIdInAndUsuarioId(dto.categoriasIds(), registro.getUsuario().getId()));
 
-            if(categorias.size() != dto.categoriasIds().size()){
+            if (categorias.size() != dto.categoriasIds().size()) {
                 throw new CategoriaNaoEncontradaException("Categoria nao encontrada.");
             }
 
@@ -130,10 +128,10 @@ public class RegistroService {
         return registroMapper.toDTO(registro);
     }
 
-    private Registro findOwnerRegistration(UUID id){
-        UUID idUsuario = UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
+    private Registro findOwnerRegistration(UUID id) {
+        UUID idUsuario = authenticatedUserService.getCurrentUserId();
         Registro registro = repository.findById(id).orElseThrow(() -> new RegistroNaoEncontradoException("Registro não encontrado."));
-        if(!registro.getUsuario().getId().equals(idUsuario)){
+        if (!registro.getUsuario().getId().equals(idUsuario)) {
             throw new RegistroNaoEncontradoException("Registro não encontrado.");
         }
         return registro;

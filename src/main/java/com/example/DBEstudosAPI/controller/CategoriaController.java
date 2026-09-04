@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.Set;
 import java.util.UUID;
 
@@ -35,8 +36,10 @@ public class CategoriaController {
             @ApiResponse(responseCode = "400", description = "Erro de validação ou JSON inválido."),
             @ApiResponse(responseCode = "401", description = "Sessão inválida ou expirada.")
     })
-    public void salvar(@RequestBody @Valid CategoriaPostDTO dto){
-        service.save(dto);
+    public ResponseEntity<CategoriaResponseDTO> salvar(@RequestBody @Valid CategoriaPostDTO dto){
+        CategoriaResponseDTO responseDTO = service.save(dto);
+        URI location = URI.create("/categorias/" + responseDTO.id());
+        return ResponseEntity.created(location).body(responseDTO);
     }
 
     @GetMapping("{id}")

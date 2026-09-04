@@ -1,5 +1,6 @@
 package com.example.DBEstudosAPI.service;
 
+import com.example.DBEstudosAPI.configuration.JwtProperties;
 import com.example.DBEstudosAPI.dto.RefreshTokenRequestDTO;
 import com.example.DBEstudosAPI.dto.TokenResponseDTO;
 import com.example.DBEstudosAPI.entities.RefreshToken;
@@ -12,10 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.HexFormat;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -25,6 +30,7 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtTokenService tokenService;
     private final UsuarioRepository usuarioRepository;
+    private final JwtProperties jwtProperties;
 
     public String generateRefreshToken() {
         SecureRandom sr = new SecureRandom();
@@ -33,25 +39,24 @@ public class RefreshTokenService {
         return Base64.getUrlEncoder().encodeToString(seed);
     }
 
-    public String createSession(Usuario usuario) {
-        String refreshTokenEncoded = generateRefreshToken();
-        RefreshToken refreshTokenEntity = new RefreshToken();
-        refreshTokenEntity.setTokenHash(refreshTokenEncoded);
-        refreshTokenEntity.setUserId(usuario.getId());
-        refreshTokenEntity.setExpiresAt(Instant.now().plus(Duration.ofDays(7)));
-        refreshTokenEntity.setSessaoExpiresAt(Instant.now().plus(Duration.ofDays(14)));
-        refreshTokenEntity.setRevogado(false);
-        refreshTokenRepository.save(refreshTokenEntity);
-        return refreshTokenEncoded;
+    public String encodeRefreshTokenToHash(String refreshToken) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(refreshToken.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("O SHA-256 não está disponível.", e);
+        }
     }
 
-    public String refreshSession(RefreshToken refreshToken) {
+    public String buildAndSaveRefreshToken(UUID usuarioId, Instant sessaoExpiresAt) {
         String refreshTokenEncoded = generateRefreshToken();
+        String refreshTokenHash = encodeRefreshTokenToHash(refreshTokenEncoded);
         RefreshToken refreshTokenEntity = new RefreshToken();
-        refreshTokenEntity.setTokenHash(refreshTokenEncoded);
-        refreshTokenEntity.setUserId(refreshToken.getUserId());
-        refreshTokenEntity.setExpiresAt(Instant.now().plus(Duration.ofDays(7)));
-        refreshTokenEntity.setSessaoExpiresAt(refreshToken.getSessaoExpiresAt());
+        refreshTokenEntity.setTokenHash(refreshTokenHash);
+        refreshTokenEntity.setUserId(usuarioId);
+        refreshTokenEntity.setExpiresAt(Instant.now().plus(jwtProperties.getRefreshTokenDuration()));
+        refreshTokenEntity.setSessaoExpiresAt(sessaoExpiresAt);
         refreshTokenEntity.setRevogado(false);
         refreshTokenRepository.save(refreshTokenEntity);
         return refreshTokenEncoded;
@@ -59,7 +64,7 @@ public class RefreshTokenService {
 
     @Transactional
     public TokenResponseDTO refresh(RefreshTokenRequestDTO dto) {
-        RefreshToken refreshTokenEncontrado = refreshTokenRepository.findByTokenHash(dto.refreshToken()).orElseThrow(() -> new RefreshTokenInvalidoException("Refresh Token inválido!"));
+        RefreshToken refreshTokenEncontrado = refreshTokenRepository.findByTokenHash(encodeRefreshTokenToHash(dto.refreshToken())).orElseThrow(() -> new RefreshTokenInvalidoException("Refresh Token inválido!"));
         if (refreshTokenEncontrado.isRevogado()) {
             throw new RefreshTokenRevogadoException("Refresh Token Revogado!");
         }
@@ -79,7 +84,7 @@ public class RefreshTokenService {
 
         refreshTokenEncontrado.setRevogado(true);
         String accessToken = tokenService.generateToken(usuario);
-        String refreshToken = refreshSession(refreshTokenEncontrado);
+        String refreshToken = buildAndSaveRefreshToken(refreshTokenEncontrado.getUserId(), refreshTokenEncontrado.getSessaoExpiresAt());
         refreshTokenRepository.save(refreshTokenEncontrado);
         return new TokenResponseDTO(accessToken, refreshToken);
     }

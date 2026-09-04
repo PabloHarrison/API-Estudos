@@ -5,5 +5,5 @@ import org.springframework.http.HttpStatus;
 
 import java.util.Set;
 
-public record RestMenssagemErro(HttpStatus status, String mensagem, Set<RestCampoErro> erros) {
+public record RestMensagemErro(HttpStatus status, String mensagem, Set<RestCampoErro> erros) {
 }
