@@ -1,9 +1,7 @@
 package com.example.DBEstudosAPI.service;
 
 import com.example.DBEstudosAPI.configuration.JwtProperties;
-import com.example.DBEstudosAPI.dto.TokenResponseDTO;
-import com.example.DBEstudosAPI.dto.UsuarioLoginDTO;
-import com.example.DBEstudosAPI.dto.UsuarioPostDTO;
+import com.example.DBEstudosAPI.dto.*;
 import com.example.DBEstudosAPI.exceptions.UsuarioNaoEncontradoException;
 import com.example.DBEstudosAPI.mappers.UsuarioMapper;
 import com.example.DBEstudosAPI.entities.Usuario;
@@ -39,7 +37,7 @@ public class UsuarioService {
         return usuarioRepository.findByEmail(email).orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado!"));
     }
 
-    public void registerUser(UsuarioPostDTO dto) {
+    public RegisterResponseDTO registerUser(UsuarioPostDTO dto) {
         validator.usuarioValidator(dto.login(), dto.email());
         Usuario usuario;
         usuario = usuarioMapper.toEntity(dto);
@@ -47,6 +45,16 @@ public class UsuarioService {
         usuario.setRoles(Roles.USER);
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
         log.info("event=user_registered usuarioId={}", usuarioSalvo.getId());
+        UsuarioResponseDTO usuarioResponseDTO = usuarioMapper.toDTO(usuarioSalvo);
+
+        UsuarioLoginDTO usuarioLoginDTO = new UsuarioLoginDTO(
+                dto.email(),
+                dto.password()
+        );
+
+        TokenResponseDTO tokens = loginUser(usuarioLoginDTO);
+
+        return new RegisterResponseDTO(usuarioResponseDTO, tokens);
     }
 
     public TokenResponseDTO loginUser(UsuarioLoginDTO dto) {

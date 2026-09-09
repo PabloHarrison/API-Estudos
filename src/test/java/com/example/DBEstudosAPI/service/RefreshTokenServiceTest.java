@@ -44,7 +44,7 @@ public class RefreshTokenServiceTest {
         RefreshToken refreshTokenEntity = new RefreshToken();
         String refreshTokenEncoded = refreshTokenService.generateRefreshToken();
         refreshTokenEntity.setTokenHash(refreshTokenEncoded);
-        refreshTokenEntity.setUserId(u.getId());
+        refreshTokenEntity.setUsuario_id(u.getId());
         refreshTokenEntity.setExpiresAt(Instant.now().plus(Duration.ofDays(7)));
         refreshTokenEntity.setSessaoExpiresAt(Instant.now().plus(Duration.ofDays(14)));
         refreshTokenEntity.setRevogado(false);
@@ -102,7 +102,7 @@ public class RefreshTokenServiceTest {
         Assertions.assertThat(refreshToken).isNotNull()
                 .isNotEmpty()
                 .isEqualTo(saved.getTokenHash());
-        Assertions.assertThat(saved.getUserId()).isEqualTo(u.getId());
+        Assertions.assertThat(saved.getUsuario_id()).isEqualTo(u.getId());
         Assertions.assertThat(saved.isRevogado()).isFalse();
         Assertions.assertThat(saved.getExpiresAt()).isAfter(Instant.now());
         Assertions.assertThat(saved.getSessaoExpiresAt()).isAfter(saved.getExpiresAt());
@@ -115,7 +115,7 @@ public class RefreshTokenServiceTest {
 
         Mockito.when(refreshTokenRepository.save(Mockito.any())).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
-        String refreshTokenSession = refreshTokenService.buildAndSaveRefreshToken(refreshToken.getUserId(), refreshToken.getSessaoExpiresAt());
+        String refreshTokenSession = refreshTokenService.buildAndSaveRefreshToken(refreshToken.getUsuario_id(), refreshToken.getSessaoExpiresAt());
 
         ArgumentCaptor<RefreshToken> captor = ArgumentCaptor.forClass(RefreshToken.class);
 
@@ -126,7 +126,7 @@ public class RefreshTokenServiceTest {
                 .isNotEmpty()
                 .isEqualTo(saved.getTokenHash());
         Assertions.assertThat(saved.getTokenHash()).isNotEqualTo(refreshToken.getTokenHash());
-        Assertions.assertThat(saved.getUserId()).isEqualTo(refreshToken.getUserId());
+        Assertions.assertThat(saved.getUsuario_id()).isEqualTo(refreshToken.getUsuario_id());
         Assertions.assertThat(saved.isRevogado()).isFalse();
         Assertions.assertThat(saved.getExpiresAt()).isAfter(Instant.now());
         Assertions.assertThat(saved.getSessaoExpiresAt()).isEqualTo(refreshToken.getSessaoExpiresAt());
@@ -136,14 +136,14 @@ public class RefreshTokenServiceTest {
     void deveCriarFluxoDeRefreshToken() {
         Usuario u = criarUsuario();
         RefreshToken refreshTokenEncontrado = criarRefreshToken(u);
-        RefreshTokenRequestDTO requestDTO = new RefreshTokenRequestDTO(refreshTokenEncontrado.getTokenHash());
+        String refreshToken = refreshTokenEncontrado.getTokenHash();
 
         Mockito.when(refreshTokenRepository.findByTokenHash(Mockito.anyString())).thenReturn(Optional.of(refreshTokenEncontrado));
         Mockito.when(usuarioRepository.findById(Mockito.any())).thenReturn(Optional.of(u));
         Mockito.when(jwtTokenService.generateToken(Mockito.any())).thenReturn("accessToken");
         Mockito.when(refreshTokenRepository.save(Mockito.any())).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
-        TokenResponseDTO responseDTO = refreshTokenService.refresh(requestDTO);
+        TokenResponseDTO responseDTO = refreshTokenService.refresh(refreshToken);
 
         ArgumentCaptor<RefreshToken> captor = ArgumentCaptor.forClass(RefreshToken.class);
 
@@ -163,7 +163,7 @@ public class RefreshTokenServiceTest {
                 .isEqualTo(refreshTokenEncontrado.getTokenHash());
         Assertions.assertThat(antigo.isRevogado())
                 .isTrue();
-        Assertions.assertThat(antigo.getUserId())
+        Assertions.assertThat(antigo.getUsuario_id())
                 .isEqualTo(u.getId());
         Assertions.assertThat(novo.getTokenHash())
                 .isNotNull()
@@ -171,7 +171,7 @@ public class RefreshTokenServiceTest {
                 .isNotEqualTo(refreshTokenEncontrado.getTokenHash());
         Assertions.assertThat(novo.isRevogado())
                 .isFalse();
-        Assertions.assertThat(novo.getUserId())
+        Assertions.assertThat(novo.getUsuario_id())
                 .isEqualTo(u.getId());
         Assertions.assertThat(novo.getSessaoExpiresAt())
                 .isEqualTo(refreshTokenEncontrado.getSessaoExpiresAt());
@@ -188,11 +188,11 @@ public class RefreshTokenServiceTest {
     void deveLancarExcecaoRefreshTokenInvalidoNoFluxo(){
         Usuario u = criarUsuario();
         RefreshToken refreshTokenEncontrado = criarRefreshToken(u);
-        RefreshTokenRequestDTO requestDTO = new RefreshTokenRequestDTO(refreshTokenEncontrado.getTokenHash());
+        String refreshToken = refreshTokenEncontrado.getTokenHash();
 
         Mockito.when(refreshTokenRepository.findByTokenHash(Mockito.anyString())).thenReturn(Optional.empty());
 
-        Throwable erro = Assertions.catchThrowable(() -> refreshTokenService.refresh(requestDTO));
+        Throwable erro = Assertions.catchThrowable(() -> refreshTokenService.refresh(refreshToken));
 
         Assertions.assertThat(erro).isInstanceOf(RefreshTokenInvalidoException.class).hasMessage("Refresh Token inválido!");
 
@@ -204,11 +204,11 @@ public class RefreshTokenServiceTest {
         Usuario u = criarUsuario();
         RefreshToken refreshTokenEncontrado = criarRefreshToken(u);
         refreshTokenEncontrado.setRevogado(true);
-        RefreshTokenRequestDTO requestDTO = new RefreshTokenRequestDTO(refreshTokenEncontrado.getTokenHash());
+        String refreshToken = refreshTokenEncontrado.getTokenHash();
 
         Mockito.when(refreshTokenRepository.findByTokenHash(Mockito.anyString())).thenReturn(Optional.of(refreshTokenEncontrado));
 
-        Throwable erro = Assertions.catchThrowable(() -> refreshTokenService.refresh(requestDTO));
+        Throwable erro = Assertions.catchThrowable(() -> refreshTokenService.refresh(refreshToken));
 
         Assertions.assertThat(erro).isInstanceOf(RefreshTokenRevogadoException.class).hasMessage("Refresh Token Revogado!");
 
@@ -221,11 +221,11 @@ public class RefreshTokenServiceTest {
         RefreshToken refreshTokenEncontrado = criarRefreshToken(u);
         Instant past = Instant.now().minus(Duration.ofMinutes(5));
         refreshTokenEncontrado.setExpiresAt(past);
-        RefreshTokenRequestDTO requestDTO = new RefreshTokenRequestDTO(refreshTokenEncontrado.getTokenHash());
+        String refreshToken = refreshTokenEncontrado.getTokenHash();
 
         Mockito.when(refreshTokenRepository.findByTokenHash(Mockito.anyString())).thenReturn(Optional.of(refreshTokenEncontrado));
 
-        Throwable erro = Assertions.catchThrowable(() -> refreshTokenService.refresh(requestDTO));
+        Throwable erro = Assertions.catchThrowable(() -> refreshTokenService.refresh(refreshToken));
 
         Assertions.assertThat(erro).isInstanceOf(RefreshTokenExpiradoException.class).hasMessage("Refresh Token Expirado!");
 
@@ -238,11 +238,11 @@ public class RefreshTokenServiceTest {
         RefreshToken refreshTokenEncontrado = criarRefreshToken(u);
         Instant past = Instant.now().minus(Duration.ofMinutes(5));
         refreshTokenEncontrado.setSessaoExpiresAt(past);
-        RefreshTokenRequestDTO requestDTO = new RefreshTokenRequestDTO(refreshTokenEncontrado.getTokenHash());
+        String refreshToken = refreshTokenEncontrado.getTokenHash();
 
         Mockito.when(refreshTokenRepository.findByTokenHash(Mockito.anyString())).thenReturn(Optional.of(refreshTokenEncontrado));
 
-        Throwable erro = Assertions.catchThrowable(() -> refreshTokenService.refresh(requestDTO));
+        Throwable erro = Assertions.catchThrowable(() -> refreshTokenService.refresh(refreshToken));
 
         Assertions.assertThat(erro).isInstanceOf(SessaoExpiradaException.class).hasMessage("Sessão de Refresh Token Expirada!");
 
@@ -253,12 +253,12 @@ public class RefreshTokenServiceTest {
     void deveLancarExcecaoUsuarioNaoEncontradoNoFluxo(){
         Usuario u = criarUsuario();
         RefreshToken refreshTokenEncontrado = criarRefreshToken(u);
-        RefreshTokenRequestDTO requestDTO = new RefreshTokenRequestDTO(refreshTokenEncontrado.getTokenHash());
+        String refreshToken = refreshTokenEncontrado.getTokenHash();
 
         Mockito.when(refreshTokenRepository.findByTokenHash(Mockito.anyString())).thenReturn(Optional.of(refreshTokenEncontrado));
         Mockito.when(usuarioRepository.findById(Mockito.any())).thenReturn(Optional.empty());
 
-        Throwable erro = Assertions.catchThrowable(() -> refreshTokenService.refresh(requestDTO));
+        Throwable erro = Assertions.catchThrowable(() -> refreshTokenService.refresh(refreshToken));
 
         Assertions.assertThat(erro).isInstanceOf(UsuarioNaoEncontradoException.class).hasMessage("Usuário não Encontrado!");
 

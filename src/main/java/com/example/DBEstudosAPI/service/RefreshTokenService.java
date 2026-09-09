@@ -63,8 +63,8 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public TokenResponseDTO refresh(RefreshTokenRequestDTO dto) {
-        RefreshToken refreshTokenEncontrado = refreshTokenRepository.findByTokenHash(encodeRefreshTokenToHash(dto.refreshToken())).orElseThrow(() -> new RefreshTokenInvalidoException("Refresh Token inválido!"));
+    public TokenResponseDTO refresh(String refreshToken) {
+        RefreshToken refreshTokenEncontrado = refreshTokenRepository.findByTokenHash(encodeRefreshTokenToHash(refreshToken)).orElseThrow(() -> new RefreshTokenInvalidoException("Refresh Token inválido!"));
         if (refreshTokenEncontrado.isRevogado()) {
             throw new RefreshTokenRevogadoException("Refresh Token Revogado!");
         }
@@ -84,8 +84,8 @@ public class RefreshTokenService {
 
         refreshTokenEncontrado.setRevogado(true);
         String accessToken = tokenService.generateToken(usuario);
-        String refreshToken = buildAndSaveRefreshToken(refreshTokenEncontrado.getUsuario_id(), refreshTokenEncontrado.getSessaoExpiresAt());
+        String newRefreshToken = buildAndSaveRefreshToken(refreshTokenEncontrado.getUsuario_id(), refreshTokenEncontrado.getSessaoExpiresAt());
         refreshTokenRepository.save(refreshTokenEncontrado);
-        return new TokenResponseDTO(accessToken, refreshToken);
+        return new TokenResponseDTO(accessToken, newRefreshToken);
     }
 }

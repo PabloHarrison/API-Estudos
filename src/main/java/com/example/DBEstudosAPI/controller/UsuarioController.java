@@ -1,9 +1,7 @@
 package com.example.DBEstudosAPI.controller;
 
-import com.example.DBEstudosAPI.dto.RefreshTokenRequestDTO;
-import com.example.DBEstudosAPI.dto.TokenResponseDTO;
-import com.example.DBEstudosAPI.dto.UsuarioLoginDTO;
-import com.example.DBEstudosAPI.dto.UsuarioPostDTO;
+import com.example.DBEstudosAPI.configuration.JwtProperties;
+import com.example.DBEstudosAPI.dto.*;
 import com.example.DBEstudosAPI.service.RefreshTokenService;
 import com.example.DBEstudosAPI.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,8 +10,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("auth")
@@ -23,6 +26,7 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
     private final RefreshTokenService refreshTokenService;
+    private final JwtProperties jwtProperties;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
@@ -34,8 +38,31 @@ public class UsuarioController {
             @ApiResponse(responseCode = "400", description = "Erro de validação ou JSON inválido."),
             @ApiResponse(responseCode = "409", description = "Usuário já cadastrado")
     })
-    public void registrar(@RequestBody @Valid UsuarioPostDTO dto){
-        usuarioService.registerUser(dto);
+    public ResponseEntity<RegisterResponseDTO> registrar(@RequestBody @Valid UsuarioPostDTO dto) {
+        RegisterResponseDTO responseDTO = usuarioService.registerUser(dto);
+
+        ResponseCookie accessToken = ResponseCookie.from("accessToken", responseDTO.tokens().accessToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(jwtProperties.getAccessTokenDuration())
+                .sameSite("Strict")
+                .build();
+
+        ResponseCookie refreshToken = ResponseCookie.from("refreshToken", responseDTO.tokens().refreshToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(jwtProperties.getRefreshTokenDuration())
+                .sameSite("Strict")
+                .build();
+
+        return ResponseEntity.created(URI.create("/usuarios/" + responseDTO.usuario().id()))
+                .headers(httpHeaders -> {
+                    httpHeaders.add(HttpHeaders.SET_COOKIE, accessToken.toString());
+                    httpHeaders.add(HttpHeaders.SET_COOKIE, refreshToken.toString());
+                })
+                .body(responseDTO);
     }
 
     @PostMapping("/login")
@@ -48,8 +75,31 @@ public class UsuarioController {
             @ApiResponse(responseCode = "400", description = "Erro de validação ou JSON inválido."),
             @ApiResponse(responseCode = "401", description = "Credentiais inválidas.")
     })
-    public TokenResponseDTO logar(@RequestBody @Valid UsuarioLoginDTO dto) {
-        return usuarioService.loginUser(dto);
+    public ResponseEntity<TokenResponseDTO> logar(@RequestBody @Valid UsuarioLoginDTO dto) {
+        TokenResponseDTO responseDTO = usuarioService.loginUser(dto);
+
+        ResponseCookie accessToken = ResponseCookie.from("accessToken", responseDTO.accessToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(jwtProperties.getAccessTokenDuration())
+                .sameSite("Strict")
+                .build();
+
+        ResponseCookie refreshToken = ResponseCookie.from("refreshToken", responseDTO.refreshToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(jwtProperties.getRefreshTokenDuration())
+                .sameSite("Strict")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .headers(httpHeaders -> {
+                    httpHeaders.add(HttpHeaders.SET_COOKIE, accessToken.toString());
+                    httpHeaders.add(HttpHeaders.SET_COOKIE, refreshToken.toString());
+                })
+                .build();
     }
 
     @PostMapping("/refresh")
@@ -62,7 +112,30 @@ public class UsuarioController {
             @ApiResponse(responseCode = "400", description = "Erro de validação ou JSON inválido."),
             @ApiResponse(responseCode = "401", description = "Refresh token inválido, expirado ou revogado.")
     })
-    public TokenResponseDTO refresh(@RequestBody @Valid RefreshTokenRequestDTO dto){
-        return refreshTokenService.refresh(dto);
+    public ResponseEntity<TokenResponseDTO> refresh(@CookieValue("refreshToken") String refreshTokenCookie) {
+        TokenResponseDTO responseDTO = refreshTokenService.refresh(refreshTokenCookie);
+
+        ResponseCookie accessToken = ResponseCookie.from("accessToken", responseDTO.accessToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(jwtProperties.getAccessTokenDuration())
+                .sameSite("Strict")
+                .build();
+
+        ResponseCookie refreshToken = ResponseCookie.from("refreshToken", responseDTO.refreshToken())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(jwtProperties.getRefreshTokenDuration())
+                .sameSite("Strict")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .headers(httpHeaders -> {
+                    httpHeaders.add(HttpHeaders.SET_COOKIE, accessToken.toString());
+                    httpHeaders.add(HttpHeaders.SET_COOKIE, refreshToken.toString());
+                })
+                .build();
     }
 }

@@ -13,6 +13,7 @@ public class JwtProperties {
 
     private String privateKeyPath;
     private String publicKeyPath;
+    private Duration accessTokenDuration;
     private Duration refreshTokenDuration;
     private Duration sessionDuration;
 }

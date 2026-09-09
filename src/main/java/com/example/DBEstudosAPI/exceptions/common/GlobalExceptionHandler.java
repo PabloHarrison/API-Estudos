@@ -10,6 +10,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -179,6 +180,15 @@ public class GlobalExceptionHandler {
                 e.getMessage(),
                 Set.of());
         log.warn("event=session_expired status=401 message=session_expired");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMensagemErro);
+    }
+
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<RestMensagemErro> handleMissingRequestCookieException(MissingRequestCookieException e){
+        RestMensagemErro restMensagemErro = new RestMensagemErro(HttpStatus.UNAUTHORIZED,
+                e.getMessage(),
+                Set.of());
+        log.warn("event=missing_request_cookie status=401 message=missing_cookie_in_request");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(restMensagemErro);
     }
 

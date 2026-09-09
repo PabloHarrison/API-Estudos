@@ -18,6 +18,7 @@ spring:
   jwt:
     private-key-path: ${JWT_PRIVATE_KEY_PATH}
     public-key-path: ${JWT_PUBLIC_KEY_PATH}
+    access-token-duration: ${ACCESS_TOKEN_DURATION}
     refresh-token-duration: ${REFRESH_TOKEN_DURATION}
     session-duration: ${SESSION_DURATION}
   flyway:

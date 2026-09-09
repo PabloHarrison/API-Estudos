@@ -75,7 +75,7 @@ public class RegistroController {
             @RequestParam(value = "min", required = false) Integer min,
             @RequestParam(value = "max", required = false) Integer max,
             @RequestParam(value = "pagina", defaultValue = "0") Integer pagina,
-            @RequestParam(value = "tamanho-paginas", defaultValue = "5") Integer tamanhoPagina
+            @RequestParam(value = "tamanho-paginas", defaultValue = "10") Integer tamanhoPagina
     ){
         Page<RegistroResponseDTO> resultado = service.search(ano, mes, dia, nomeCategoria, min, max, pagina, tamanhoPagina);
         return ResponseEntity.ok(resultado);
