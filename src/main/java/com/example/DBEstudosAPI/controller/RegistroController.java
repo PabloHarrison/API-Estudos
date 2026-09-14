@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
@@ -68,16 +69,19 @@ public class RegistroController {
             @ApiResponse(responseCode = "401", description = "Sessão inválida ou expirada."),
     })
     public ResponseEntity<Page<RegistroResponseDTO>> search(
+            @RequestParam(value = "data-especifica", required = false) LocalDate dataEspecifica,
+            @RequestParam(value = "data-inicio", required = false) LocalDate dataInicio,
+            @RequestParam(value = "data-fim", required = false) LocalDate dataFim,
             @RequestParam(value = "ano", required = false) Integer ano,
             @RequestParam(value = "mes", required = false) Integer mes,
-            @RequestParam(value = "dia", required = false) Integer dia,
             @RequestParam(value = "nome-categoria", required = false) String nomeCategoria,
             @RequestParam(value = "min", required = false) Integer min,
             @RequestParam(value = "max", required = false) Integer max,
             @RequestParam(value = "pagina", defaultValue = "0") Integer pagina,
-            @RequestParam(value = "tamanho-paginas", defaultValue = "10") Integer tamanhoPagina
+            @RequestParam(value = "tamanho-paginas", defaultValue = "10") Integer tamanhoPagina,
+            @RequestParam(value = "ordenar-por") String ordernarPor
     ){
-        Page<RegistroResponseDTO> resultado = service.search(ano, mes, dia, nomeCategoria, min, max, pagina, tamanhoPagina);
+        Page<RegistroResponseDTO> resultado = service.search(dataEspecifica, dataInicio, dataFim, ano, mes, nomeCategoria, min, max, pagina, tamanhoPagina, ordernarPor);
         return ResponseEntity.ok(resultado);
     }
 

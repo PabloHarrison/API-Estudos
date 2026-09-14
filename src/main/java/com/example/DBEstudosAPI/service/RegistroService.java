@@ -24,11 +24,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -73,12 +72,21 @@ public class RegistroService {
         log.info("event=registro_deleted registroId={} usuarioId={}", registro.getId(), registro.getUsuario().getId());
     }
 
-    public Page<RegistroResponseDTO> search(Integer ano, Integer mes, Integer dia, String nomeCategoria, Integer min, Integer max, Integer pagina, Integer tamanhoPagina) {
+    public Page<RegistroResponseDTO> search(LocalDate dataEspecifica, LocalDate dataInicio, LocalDate dataFim, Integer ano, Integer mes, String nomeCategoria, Integer min, Integer max, Integer pagina, Integer tamanhoPagina, String ordernarPor) {
         UUID id = authenticatedUserService.getCurrentUserId();
         Specification<Registro> specs = RegistroSpecs.usuarioIdEquals(id);
 
-        if (ano != null && mes != null && dia != null) {
-            specs = specs.and(RegistroSpecs.dataAnoMesDiaEquals(ano, mes, dia));
+        if ((dataInicio == null) != (dataFim == null)){
+            throw new IllegalArgumentException("Data de início e data de fim devem ser informadas juntas.");
+        }
+        if (dataInicio != null && dataInicio.isAfter(dataFim)){
+            throw new IllegalArgumentException("A data inicial não pode ser posterior à data final.");
+        }
+
+        if (dataEspecifica != null) {
+            specs = specs.and(RegistroSpecs.dataEquals(dataEspecifica));
+        } else if (dataInicio != null && dataFim != null) {
+            specs = specs.and(RegistroSpecs.dataBetween(dataInicio, dataFim));
         } else if (ano != null && mes != null) {
             specs = specs.and(RegistroSpecs.dataAnoMesEquals(ano, mes));
         } else if (ano != null) {
@@ -90,7 +98,9 @@ public class RegistroService {
         if (min != null || max != null) {
             specs = specs.and(RegistroSpecs.tempoBetween(min, max));
         }
-        Pageable pageRequest = PageRequest.of(pagina, tamanhoPagina, Sort.by("data").descending());
+
+        Pageable pageRequest = orderBy(pagina, tamanhoPagina, ordernarPor);
+
         return repository.findAll(specs, pageRequest).map(registroMapper::toDTO);
     }
 
@@ -132,5 +142,14 @@ public class RegistroService {
             throw new RegistroNaoEncontradoException("Registro não encontrado.");
         }
         return registro;
+    }
+
+    private Pageable orderBy(Integer pagina, Integer tamanhoPagina, String ordenarPor){
+        return switch (ordenarPor) {
+            case "older" -> PageRequest.of(pagina, tamanhoPagina, Sort.by("data").ascending());
+            case "more-time" -> PageRequest.of(pagina, tamanhoPagina, Sort.by("tempoEmMinutos").descending());
+            case "less-time" -> PageRequest.of(pagina, tamanhoPagina, Sort.by("tempoEmMinutos").ascending());
+            default -> PageRequest.of(pagina, tamanhoPagina, Sort.by("data").descending());
+        };
     }
 }

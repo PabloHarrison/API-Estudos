@@ -279,7 +279,7 @@ public class RegistroServiceTest {
         mockBase(r, page, c);
 
         Page<RegistroResponseDTO> resultado =
-                service.search(null, null, null, null, null, null, 0, 10);
+                service.search(null, null, null, null, null, null, 0, 10, null);
 
         Assertions.assertThat(resultado).isNotEmpty();
         Assertions.assertThat(resultado.getContent()).hasSize(1);
@@ -298,7 +298,7 @@ public class RegistroServiceTest {
         mockBase(r, page, c);
 
         Page<RegistroResponseDTO> resultado =
-                service.search(2000, 10, 13, null, null, null, 0, 10);
+                service.search(2000, 10, 13, null, null, null, 0, 10, null);
 
         Assertions.assertThat(resultado).isNotEmpty();
         Assertions.assertThat(resultado.getContent()).hasSize(1);
@@ -317,7 +317,7 @@ public class RegistroServiceTest {
         mockBase(r, page, c);
 
         Page<RegistroResponseDTO> resultado =
-                service.search(2000, 10, null, null, null, null, 0, 10);
+                service.search(2000, 10, null, null, null, null, 0, 10, null);
 
         Assertions.assertThat(resultado).isNotEmpty();
         Assertions.assertThat(resultado.getContent()).hasSize(1);
@@ -336,7 +336,7 @@ public class RegistroServiceTest {
         mockBase(r, page, c);
 
         Page<RegistroResponseDTO> resultado =
-                service.search(2000, null, null, null, null, null, 0, 10);
+                service.search(2000, null, null, null, null, null, 0, 10, null);
 
         Assertions.assertThat(resultado).isNotEmpty();
         Assertions.assertThat(resultado.getContent()).hasSize(1);
@@ -355,7 +355,7 @@ public class RegistroServiceTest {
         mockBase(r, page, c);
 
         Page<RegistroResponseDTO> resultado =
-                service.search(null, null, null, "Java", null, null, 0, 10);
+                service.search(null, null, null, "Java", null, null, 0, 10, null);
 
         Assertions.assertThat(resultado).isNotEmpty();
         Assertions.assertThat(resultado.getContent()).hasSize(1);
@@ -374,7 +374,7 @@ public class RegistroServiceTest {
         mockBase(r, page, c);
 
         Page<RegistroResponseDTO> resultado =
-                service.search(null, null, null, null, 10, 20, 0, 10);
+                service.search(null, null, null, null, 10, 20, 0, 10, null);
 
         Assertions.assertThat(resultado).isNotEmpty();
         Assertions.assertThat(resultado.getContent()).hasSize(1);
@@ -398,16 +398,15 @@ public class RegistroServiceTest {
         Mockito.when(categoriaRepository.findAllByIdInAndUsuarioId(Set.of(c.getId()), r.getUsuario().getId())).thenReturn(Set.of(c));
         Mockito.when(registroRepository.save(Mockito.any(Registro.class))).thenReturn(r);
         Mockito.when(mapper.toDTO(r)).thenReturn(new RegistroResponseDTO(r.getId(),
-                LocalDate.of(2025, 10, 29), 50, "Texto", "Texto2", "Texto3", Set.of(cResponseDTO)));
+                LocalDate.of(2025, 10, 29), 50, "Texto", "Texto2", Set.of(cResponseDTO)));
 
-        RegistroResponseDTO rAtualizado = service.update(String.valueOf(UUID.fromString("7dce5f33-8375-4514-85c8-9968681c4815")),
-                new RegistroPatchDTO(r.getData(), 50, "Texto", "Texto2", "Texto3", Set.of(cResponseDTO.id())));
+        RegistroResponseDTO rAtualizado = service.update(UUID.fromString("7dce5f33-8375-4514-85c8-9968681c4815"),
+                new RegistroPatchDTO(r.getData(), 50, "Texto", "Texto2", Set.of(cResponseDTO.id())));
 
         Assertions.assertThat(rAtualizado).isNotNull();
         Assertions.assertThat(rAtualizado.id()).isEqualTo(r.getId());
         Assertions.assertThat(rAtualizado.data()).isEqualTo(LocalDate.of(2025, 10, 29));
-        Assertions.assertThat(rAtualizado.horasEstudadas()).isEqualTo(50);
-        Assertions.assertThat(rAtualizado.anotacao()).isEqualTo("Texto");
+        Assertions.assertThat(rAtualizado.tempoEmMinutos()).isEqualTo(50);
         Assertions.assertThat(rAtualizado.resumo()).isEqualTo("Texto2");
         Assertions.assertThat(rAtualizado.planejamento()).isEqualTo("Texto3");
 
@@ -419,13 +418,12 @@ public class RegistroServiceTest {
         Usuario u = criarUsuario();
         Categoria c = criarCategoria(u);
         Registro r = criarRegistro(c, u);
-        r.setAnotacao("Texto");
         r.setResumo("Texto2");
         r.setPlanejamento("Texto3");
         r.setId(UUID.fromString("7dce5f33-8375-4514-85c8-9968681c4815"));
         CategoriaResponseDTO cResponseDTO = new CategoriaResponseDTO(c.getId(), c.getNomeCategoria());
         LocalDate data = r.getData();
-        Integer horasEstudadas = r.getHorasEstudadas();
+        Integer horasEstudadas = r.getTempoEmMinutos();
 
         Mockito.when(authentication.getName()).thenReturn("7dce5f33-8375-4514-85c8-9968681c4815");
         Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -433,20 +431,18 @@ public class RegistroServiceTest {
         Mockito.when(registroRepository.findById(r.getId())).thenReturn(Optional.of(r));
         Mockito.when(registroRepository.save(Mockito.any(Registro.class))).thenReturn(r);
         Mockito.when(mapper.toDTO(r)).thenReturn(new RegistroResponseDTO(r.getId(),
-                r.getData(), r.getHorasEstudadas(), r.getAnotacao(), r.getResumo(), r.getPlanejamento(), Set.of(cResponseDTO)));
+                r.getData(), r.getTempoEmMinutos(), r.getResumo(), r.getPlanejamento(), Set.of(cResponseDTO)));
 
-        RegistroResponseDTO rAtualizado = service.update(String.valueOf(UUID.fromString("7dce5f33-8375-4514-85c8-9968681c4815")),
-                new RegistroPatchDTO(null, null, null, null, null, null));
+        RegistroResponseDTO rAtualizado = service.update(UUID.fromString("7dce5f33-8375-4514-85c8-9968681c4815"),
+                new RegistroPatchDTO(null, null, null, null, null));
 
         Assertions.assertThat(r.getData()).isEqualTo(data);
-        Assertions.assertThat(r.getHorasEstudadas()).isEqualTo(horasEstudadas);
-        Assertions.assertThat(r.getAnotacao()).isEqualTo("Texto");
+        Assertions.assertThat(r.getTempoEmMinutos()).isEqualTo(horasEstudadas);
         Assertions.assertThat(r.getResumo()).isEqualTo("Texto2");
         Assertions.assertThat(r.getPlanejamento()).isEqualTo("Texto3");
         Assertions.assertThat(rAtualizado.id()).isEqualTo(r.getId());
         Assertions.assertThat(rAtualizado.data()).isEqualTo(data);
-        Assertions.assertThat(rAtualizado.horasEstudadas()).isEqualTo(horasEstudadas);
-        Assertions.assertThat(rAtualizado.anotacao()).isEqualTo("Texto");
+        Assertions.assertThat(rAtualizado.tempoEmMinutos()).isEqualTo(horasEstudadas);
         Assertions.assertThat(rAtualizado.resumo()).isEqualTo("Texto2");
         Assertions.assertThat(rAtualizado.planejamento()).isEqualTo("Texto3");
 
@@ -470,8 +466,8 @@ public class RegistroServiceTest {
         Mockito.when(registroRepository.findById(r.getId())).thenReturn(Optional.of(r));
         Mockito.when(categoriaRepository.findAllByIdInAndUsuarioId(Mockito.anySet(), Mockito.any())).thenReturn(Set.of(c));
 
-        Throwable erro = Assertions.catchThrowable(() -> service.update(String.valueOf(UUID.fromString("7dce5f33-8375-4514-85c8-9968681c4815")),
-                new RegistroPatchDTO(null, null, null, null, null, Set.of(cResponseDTO.id(), cResponseDTO2.id()))));
+        Throwable erro = Assertions.catchThrowable(() -> service.update(UUID.fromString("7dce5f33-8375-4514-85c8-9968681c4815"),
+                new RegistroPatchDTO(null, null, null, null, Set.of(cResponseDTO.id(), cResponseDTO2.id()))));
 
         Assertions.assertThat(erro).isInstanceOf(CategoriaNaoEncontradaException.class).hasMessage("Categoria nao encontrada.");
 

@@ -38,16 +38,18 @@ public class RegistroSpecs {
         };
     }
 
-    public static Specification<Registro> dataAnoMesDiaEquals(Integer ano, Integer mes, Integer dia){
+    public static Specification<Registro> dataEquals(LocalDate data){
         return (root, query, cb) -> {
-            if (ano == null || mes == null || dia == null) {
+            if (data == null) {
                 return cb.conjunction();
             }
-
-            LocalDate data = LocalDate.of(ano, mes, dia);
-
             return cb.equal(root.get("data"), data);
         };
+    }
+
+    public static Specification<Registro> dataBetween(LocalDate inicio, LocalDate fim){
+        return (root, query, cb) -> cb.between(
+                root.get("data"), inicio, fim);
     }
 
     public static Specification<Registro> tempoBetween(Integer min, Integer max){

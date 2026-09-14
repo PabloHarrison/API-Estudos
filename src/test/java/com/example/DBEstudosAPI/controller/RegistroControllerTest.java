@@ -201,7 +201,8 @@ public class RegistroControllerTest {
                 1,
                 10,
                 0,
-                10)).thenReturn(dtoPage);
+                10,
+                "mais-recente")).thenReturn(dtoPage);
 
         mvc.perform(MockMvcRequestBuilders.get("/registros")
                         .param("ano", "2026")
@@ -233,7 +234,8 @@ public class RegistroControllerTest {
                 1,
                 10,
                 0,
-                10);
+                10,
+                "mais-recente");
 
         mvc.perform(MockMvcRequestBuilders.get("/registros")
                         .param("ano", "2026")
@@ -291,7 +293,7 @@ public class RegistroControllerTest {
         UUID cId = c.getId();
         Registro r = criarRegistro(c);
         String id = String.valueOf(r.getId());
-        RegistroPatchDTO patchDTO = new RegistroPatchDTO(r.getData(), r.getHorasEstudadas(), r.getAnotacao(), r.getResumo(), r.getPlanejamento(), Set.of(cId));
+        RegistroPatchDTO patchDTO = new RegistroPatchDTO(r.getData(), r.getTempoEmMinutos(), r.getResumo(), r.getPlanejamento(), Set.of(cId));
         RegistroResponseDTO responseDTO = criarResponseDTO(r, c);
 
         Mockito.when(service.update(Mockito.any(), Mockito.any())).thenReturn(responseDTO);
@@ -315,7 +317,7 @@ public class RegistroControllerTest {
         Categoria c = criarCategoria();
         Registro r = criarRegistro(c);
         String id = String.valueOf(r.getId());
-        RegistroPatchDTO patchDTO = new RegistroPatchDTO(LocalDate.now().plusDays(1), null, null, null, null, null);
+        RegistroPatchDTO patchDTO = new RegistroPatchDTO(LocalDate.now().plusDays(1), null, null, null, null);
         RegistroResponseDTO responseDTO = criarResponseDTO(r, c);
 
         Mockito.when(service.update(Mockito.any(), Mockito.any())).thenReturn(responseDTO);
@@ -336,7 +338,7 @@ public class RegistroControllerTest {
         UUID cId = c.getId();
         Registro r = criarRegistro(c);
         String id = String.valueOf(r.getId());
-        RegistroPatchDTO patchDTO = new RegistroPatchDTO(r.getData(), r.getHorasEstudadas(), r.getAnotacao(), r.getResumo(), r.getPlanejamento(), Set.of(cId));
+        RegistroPatchDTO patchDTO = new RegistroPatchDTO(r.getData(), r.getTempoEmMinutos(), r.getResumo(), r.getPlanejamento(), Set.of(cId));
 
         Mockito.doThrow(new InvalidBearerTokenException("Sessão inválida ou expirada.")).when(service).update(Mockito.any(), Mockito.any());
 
@@ -356,7 +358,7 @@ public class RegistroControllerTest {
         UUID cId = c.getId();
         Registro r = criarRegistro(c);
         String id = String.valueOf(r.getId());
-        RegistroPatchDTO patchDTO = new RegistroPatchDTO(r.getData(), r.getHorasEstudadas(), r.getAnotacao(), r.getResumo(), r.getPlanejamento(), Set.of(cId));
+        RegistroPatchDTO patchDTO = new RegistroPatchDTO(r.getData(), r.getTempoEmMinutos(), r.getResumo(), r.getPlanejamento(), Set.of(cId));
 
         Mockito.doThrow(new CategoriaNaoEncontradaException("Categoria não encontrada.")).when(service).update(Mockito.any(), Mockito.any());
 
