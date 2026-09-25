@@ -19,6 +19,8 @@ public class Categoria {
     private UUID id;
     @Column(nullable = false)
     private String nomeCategoria;
+    @Column(nullable = false)
+    private String cor;
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;

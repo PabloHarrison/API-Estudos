@@ -18,7 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -34,7 +36,7 @@ public class CategoriaService {
     private final AuthenticatedUserService authenticatedUserService;
 
     @Transactional
-    public CategoriaResponseDTO save(CategoriaPostDTO dto){
+    public CategoriaResponseDTO save(CategoriaPostDTO dto) {
         Categoria categoria = mapper.toEntity(dto);
         UUID id = authenticatedUserService.getCurrentUserId();
         Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new UsuarioNaoEncontradoException("Usuario não encontrado."));
@@ -44,31 +46,49 @@ public class CategoriaService {
         return mapper.toDTO(categoriaSalva);
     }
 
-    public Categoria findEntityById(UUID id){
+    public Categoria findEntityById(UUID id) {
         return findOwnerCategory(id);
     }
 
-    public CategoriaResponseDTO findById(UUID id){
+    public CategoriaResponseDTO findById(UUID id) {
         Categoria categoria = findEntityById(id);
         return mapper.toDTO(categoria);
     }
 
-    public Set<CategoriaResponseDTO> search(String nomeCategoria){
+    public Set<CategoriaResponseDTO> search(String nomeCategoria) {
         UUID id = authenticatedUserService.getCurrentUserId();
-        if(nomeCategoria == null){
+
+        if (nomeCategoria == null) {
             return categoriaRepository.findAllByUsuarioId(id)
                     .stream()
-                    .map(mapper::toDTO)
-                    .collect(Collectors.toSet());
+                    .map(categoria -> new CategoriaResponseDTO(
+                            categoria.getId(),
+                            categoria.getNomeCategoria(),
+                            categoria.getCor(),
+                            categoriaRepository.countRegistrosByCategoriaId(categoria.getId())
+                    ))
+                    .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator
+                            .comparingLong(CategoriaResponseDTO::quantidadeRegistros)
+                            .reversed()
+                            .thenComparing(CategoriaResponseDTO::nomeCategoria))));
+        } else {
+            return  categoriaRepository.findAllByNomeCategoriaContainingIgnoreCaseAndUsuarioId(nomeCategoria, id)
+                    .stream()
+                    .map(categoria -> new CategoriaResponseDTO(
+                            categoria.getId(),
+                            categoria.getNomeCategoria(),
+                            categoria.getCor(),
+                            categoriaRepository.countRegistrosByCategoriaId(categoria.getId())
+                    ))
+                    .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator
+                            .comparingLong(CategoriaResponseDTO::quantidadeRegistros)
+                            .reversed()
+                            .thenComparing(CategoriaResponseDTO::nomeCategoria))));
         }
-        return categoriaRepository.findAllByNomeCategoriaContainingIgnoreCaseAndUsuarioId(nomeCategoria, id)
-                .stream()
-                .map(mapper::toDTO)
-                .collect(Collectors.toSet());
     }
 
     @Transactional
-    public void delete(UUID id){
+    public void delete(UUID id) {
         Categoria categoria = findEntityById(id);
         UUID usuarioId = categoria.getUsuario().getId();
         categoriaRepository.delete(categoria);
@@ -76,7 +96,7 @@ public class CategoriaService {
     }
 
     @Transactional
-    public CategoriaResponseDTO update(UUID id, CategoriaPatchDTO dto){
+    public CategoriaResponseDTO update(UUID id, CategoriaPatchDTO dto) {
         Categoria categoria = findEntityById(id);
         categoria.setNomeCategoria(dto.nomeCategoria());
         UUID usuarioId = categoria.getUsuario().getId();
@@ -85,14 +105,14 @@ public class CategoriaService {
         return mapper.toDTO(categoria);
     }
 
-    public boolean existRegistro(Categoria categoria){
+    public boolean existRegistro(Categoria categoria) {
         return registroRepository.existsByCategoriasContains(categoria);
     }
 
-    private Categoria findOwnerCategory(UUID id){
+    private Categoria findOwnerCategory(UUID id) {
         UUID idUsuario = authenticatedUserService.getCurrentUserId();
         Categoria categoria = categoriaRepository.findById(id).orElseThrow(() -> new CategoriaNaoEncontradaException("Categoria não encontrada."));
-        if(!categoria.getUsuario().getId().equals(idUsuario)){
+        if (!categoria.getUsuario().getId().equals(idUsuario)) {
             throw new CategoriaNaoEncontradaException("Categoria não encontrada.");
         }
         return categoria;

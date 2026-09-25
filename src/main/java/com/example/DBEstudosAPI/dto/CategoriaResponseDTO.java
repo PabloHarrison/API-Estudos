@@ -7,5 +7,7 @@ import java.util.UUID;
 @Schema(name = "CategoriaResponse")
 public record CategoriaResponseDTO(
         UUID id,
-        String nomeCategoria) {
+        String nomeCategoria,
+        String cor,
+        Long quantidadeRegistros) {
 }

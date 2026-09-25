@@ -1,0 +1,5 @@
+ALTER TABLE categoria
+ADD cor VARCHAR(7) NOT NULL;
+
+ALTER TABLE categoria
+ALTER COLUMN nome_categoria TYPE VARCHAR(30);
